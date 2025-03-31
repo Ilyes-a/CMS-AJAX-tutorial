@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Intégration pour WebsiteBaker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Intégration avec WebsiteBaker</h1>
+  </header>
+
+  <!-- Menu de navigation -->
+  <nav>
+    <ul>
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="wordpress.html">WordPress</a></li>
+      <li><a href="joomla.html">Joomla</a></li>
+      <li><a href="websitebaker.html">WebsiteBaker</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="presentation-wb">
+      <h2>Intégration dans WebsiteBaker</h2>
+      <p>
+        WebsiteBaker est un CMS léger qui vous permet de personnaliser les templates.
+        Pour intégrer votre système, il convient d’insérer le code HTML/JavaScript de votre SPA directement dans le template.
+      </p>
+    </section>
+
+    <section id="instructions-wb">
+      <h3>Procédure recommandée :</h3>
+      <ol>
+        <li>
+          <strong>Modification du template :</strong>
+          <p>Ouvrez le fichier de template (souvent situé dans <code>/templates/votre_template/</code>) et identifiez l’emplacement où vous souhaitez afficher votre SPA.</p>
+        </li>
+        <li>
+          <strong>Injection du code JavaScript :</strong>
+          <p>Ajoutez le script suivant dans la balise <code>&lt;head&gt;</code> ou juste avant la fermeture de la balise <code>&lt;/body&gt;</code> :</p>
+          <pre><code>
+&lt;script&gt;
+  document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("jwt");
+    const loginLink = document.querySelector('a[href*="/login"]');
+    const registerLink = document.querySelector('a[href*="/inscription"]');
+    const compteLink = document.querySelector('a[href*="/mon-compte"]');
+    const reservationLink = document.querySelector('a[href*="/reserver"]');
+
+    if (token) {
+      if (loginLink) loginLink.style.display = "none";
+      if (registerLink) registerLink.style.display = "none";
+      if (compteLink) compteLink.style.display = "inline-block";
+      if (reservationLink) reservationLink.style.display = "inline-block";
+    } else {
+      if (loginLink) loginLink.style.display = "inline-block";
+      if (registerLink) registerLink.style.display = "inline-block";
+      if (compteLink) compteLink.style.display = "none";
+      if (reservationLink) reservationLink.style.display = "none";
+    }
+  });
+&lt;/script&gt;
+          </code></pre>
+        </li>
+        <li>
+          <strong>Insertion de la SPA :</strong>
+          <p>Dans votre template, insérez un conteneur (par exemple une <code>&lt;div id="spa-container"&gt;</code>) dans lequel vous chargerez dynamiquement les pages HTML se trouvant dans le dossier <code>spa-php/</code>.</p>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>
