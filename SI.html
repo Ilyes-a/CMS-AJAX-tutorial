@@ -2,47 +2,30 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Configuration du Système d'Information (SI)</title>
-  <meta name="description" content="Guide complet pour configurer et structurer le Système d'Information pour l'intégration CMS.">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 2rem auto;
-      max-width: 960px;
-      line-height: 1.6;
-      color: #333;
-    }
-    h1, h2, h3 {
-      color: #2c3e50;
-    }
-    code {
-      background: #f4f4f4;
-      padding: 2px 6px;
-      border-radius: 5px;
-    }
-    pre {
-      background: #f9f9f9;
-      padding: 1rem;
-      border-left: 4px solid #3498db;
-      overflow-x: auto;
-    }
-    .diagram {
-      display: flex;
-      justify-content: center;
-      margin: 2rem 0;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🧩 Configuration et Architecture du Système d'Information (SI)</h1>
+  <header>
+    <h1>Configuration et Architecture du Système d'Information (SI)</h1>
+  </header>
 
-  <p>Ce guide explique comment installer et structurer votre <strong>Système d'Information</strong> pour qu'il fonctionne avec <em>plusieurs CMS</em> comme WordPress ou WebsiteBaker.</p>
+  <!-- Menu de navigation -->
+  <nav>
+    <ul>
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="wordpress.html">WordPress</a></li>
+      <li><a href="joomla.html">Joomla</a></li>
+      <li><a href="websitebaker.html">WebsiteBaker</a></li>
+      <li><a href="SI.html">Système d'Information</a></li>
+    </ul>
+  </nav>
 
-  <h2>📁 Architecture des fichiers</h2>
-  <div class="diagram">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Folder_icon.svg" alt="Structure des dossiers" width="80">
-  </div>
-  <pre><code>CMS-AJAX/
+  <main>
+    <section id="architecture">
+      <h2>📁 Architecture des fichiers</h2>
+      <pre><code>CMS-AJAX/
 ├── API_SYS_INFORMATION/
 │   ├── api/
 │   │   ├── login.php
@@ -52,69 +35,64 @@
 │   │   ├── utils.php
 │   │   └── db.php
 │   ├── spa-php/
-│   │   ├── login.html
-│   │   ├── login.js
-│   │   ├── register.html
-│   │   ├── register.js
-│   │   ├── mon-compte.js
-│   │   ├── compte.html
-│   │   ├── reservation.html
-│   │   ├── reservation.js
-│   │   ├── accueil.html
-│   │   ├── accueil.js
+│   │   ├── login.html / login.js
+│   │   ├── register.html / register.js
+│   │   ├── compte.html / mon-compte.js
+│   │   ├── reservation.html / reservation.js
+│   │   ├── accueil.html / accueil.js
 │   │   ├── router.js
 │   │   └── style.css
 │   └── redirect.php
-└── tennis_reservation.db
-</code></pre>
+└── tennis_reservation.db</code></pre>
+    </section>
 
-  <h2>⚙️ Fonctionnement général</h2>
-  <ul>
-    <li>Les <strong>fichiers PHP</strong> situés dans <code>/api</code> traitent les appels AJAX (authentification, réservation, etc.).</li>
-    <li>Les <strong>vues HTML</strong> sont dans <code>/spa-php</code> et sont injectées dans les CMS via fetch.</li>
-    <li><code>router.js</code> gère dynamiquement les chemins (WordPress: <code>/index.php</code>, WSB: <code>/pages</code>).</li>
-    <li><code>redirect.php</code> est un proxy de redirection propre à WSB pour simuler les routes classiques.</li>
-  </ul>
+    <section id="fonctionnement">
+      <h2>⚙️ Fonctionnement général</h2>
+      <ul>
+        <li>Les <strong>fichiers PHP</strong> situés dans <code>/api</code> traitent les appels AJAX (authentification, réservation, etc.).</li>
+        <li>Les <strong>vues HTML</strong> sont dans <code>/spa-php</code> et sont injectées dans les CMS via fetch.</li>
+        <li><code>router.js</code> gère dynamiquement les chemins (WordPress: <code>/index.php</code>, WSB: <code>/pages</code>).</li>
+        <li><code>redirect.php</code> est un proxy de redirection propre à WSB pour simuler les routes classiques.</li>
+      </ul>
+    </section>
 
-  <h2>🧭 Gestion dynamique des routes</h2>
-  <h3>🔁 redirect.php</h3>
-  <p>Ce fichier agit comme un <strong>pont</strong> entre les CMS rigides (comme WebsiteBaker) et le SI.</p>
-  <pre><code>&lt;?php
+    <section id="routes">
+      <h2>🧭 Gestion dynamique des routes</h2>
+      <h3>🔁 redirect.php</h3>
+      <pre><code>&lt;?php
 $uri = $_SERVER['REQUEST_URI'];
 $parts = explode('/', $uri);
 $route = end($parts);
 header("Location: /pages/$route");
-exit;
-</code></pre>
-
-  <h3>📍 router.js</h3>
-  <p>Script global chargé par toutes les pages JS du SI pour détecter automatiquement le préfixe d’URL :</p>
-  <pre><code>const ROUTE_PREFIX = (() => {
+exit;</code></pre>
+      <h3>📍 router.js</h3>
+      <pre><code>const ROUTE_PREFIX = (() => {
   const current = window.location.pathname;
   if (current.includes("/pages/")) return "/pages";
   if (current.includes("/index.php/")) return "/index.php";
   return "";
 })();</code></pre>
+    </section>
 
-  <h2>🎨 Fichier CSS commun</h2>
-  <p><code>style.css</code> est injecté dynamiquement dans les CMS pour harmoniser l’apparence avec le SI.</p>
-  <pre><code>const cssHref = "http://192.168.1.77/style.css";
+    <section id="style">
+      <h2>🎨 Fichier CSS commun</h2>
+      <pre><code>const cssHref = "http://192.168.1.77/style.css";
 if (!document.querySelector(`link[href="${cssHref}"]`)) {
   const css = document.createElement("link");
   css.rel = "stylesheet";
   css.href = cssHref;
   document.head.appendChild(css);
 }</code></pre>
+    </section>
 
-  <h2>🚀 Objectif final</h2>
-  <p>Garder le CMS comme simple coquille (blog, menus) et déléguer toute la logique métier (authentification, réservation) au SI.</p>
-  <div class="diagram">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Network_Diagram.svg" alt="Diagramme d'architecture" width="600">
-  </div>
+    <section id="objectif">
+      <h2>🚀 Objectif final</h2>
+      <p>Garder le CMS comme simple coquille (blog, menus) et déléguer toute la logique métier (authentification, réservation) au SI.</p>
+    </section>
+  </main>
 
-  <hr>
-  <p><strong>🗓️ Dernière mise à jour :</strong> Mars 2025</p>
-  <p><em>Projet conçu par Clovis Lahuiss – Intégration CMS & SI modulaire</em></p>
-
+  <footer>
+    <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
+  </footer>
 </body>
 </html>
