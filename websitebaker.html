@@ -1,79 +1,160 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Intégration pour WebsiteBaker</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Intégrer un système externe dans WebSiteBaker</title>
+  <meta name="description" content="Tutoriel pour intégrer un système externe dans WebSiteBaker en important dynamiquement des fichiers HTML, CSS et JS." />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+      line-height: 1.6;
+    }
+    h1, h2 {
+      color: #2b4b80;
+    }
+    code {
+      background: #f3f3f3;
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+    pre {
+      background: #f9f9f9;
+      padding: 1rem;
+      overflow-x: auto;
+      border-left: 4px solid #2b4b80;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Intégration avec WebsiteBaker</h1>
-  </header>
 
-  <!-- Menu de navigation -->
-  <nav>
-    <ul>
-      <li><a href="index.html">Accueil</a></li>
-      <li><a href="wordpress.html">WordPress</a></li>
-      <li><a href="joomla.html">Joomla</a></li>
-      <li><a href="websitebaker.html">WebsiteBaker</a></li>
-    </ul>
-  </nav>
+  <h1>🌐 Intégration d’un système externe dans <strong>WebSiteBaker</strong></h1>
 
-  <main>
-    <section id="presentation-wb">
-      <h2>Intégration dans WebsiteBaker</h2>
-      <p>
-        WebsiteBaker est un CMS léger qui vous permet de personnaliser les templates.
-        Pour intégrer votre système, il convient d’insérer le code HTML/JavaScript de votre SPA directement dans le template.
-      </p>
-    </section>
+  <p>
+    Ce guide vous montre comment intégrer des vues HTML hébergées sur un autre serveur (comme un SI externe) dans un site <strong>WebSiteBaker</strong>, sans modifier les fichiers internes du CMS.
+  </p>
 
-    <section id="instructions-wb">
-      <h3>Procédure recommandée :</h3>
-      <ol>
-        <li>
-          <strong>Modification du template :</strong>
-          <p>Ouvrez le fichier de template (souvent situé dans <code>/templates/votre_template/</code>) et identifiez l’emplacement où vous souhaitez afficher votre SPA.</p>
-        </li>
-        <li>
-          <strong>Injection du code JavaScript :</strong>
-          <p>Ajoutez le script suivant dans la balise <code>&lt;head&gt;</code> ou juste avant la fermeture de la balise <code>&lt;/body&gt;</code> :</p>
-          <pre><code>
+  <h2>1️⃣ Créer les pages dans WebSiteBaker</h2>
+  <p>Dans l’interface d’administration, créez les pages suivantes :</p>
+  <ul>
+    <li><strong>Accueil</strong></li>
+    <li><strong>Login</strong></li>
+    <li><strong>Register</strong></li>
+    <li><strong>Mon compte</strong></li>
+    <li><strong>Réserver</strong></li>
+  </ul>
+  <p>Pour chaque page, vous allez y insérer un petit script HTML + JS pour charger dynamiquement la vue correspondante.</p>
+
+  <h2>2️⃣ Code à insérer dans chaque page</h2>
+
+  <h3>🔐 Page Login</h3>
+  <pre><code>&lt;div id="app-login"&gt;&lt;/div&gt;
 &lt;script&gt;
-  document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("jwt");
-    const loginLink = document.querySelector('a[href*="/login"]');
-    const registerLink = document.querySelector('a[href*="/inscription"]');
-    const compteLink = document.querySelector('a[href*="/mon-compte"]');
-    const reservationLink = document.querySelector('a[href*="/reserver"]');
+document.addEventListener("DOMContentLoaded", () =&gt; {
+  const token = localStorage.getItem("jwt");
+  if (token) {
+    window.location.href = "/pages/mon-compte"; // redirection si déjà connecté
+    return;
+  }
 
-    if (token) {
-      if (loginLink) loginLink.style.display = "none";
-      if (registerLink) registerLink.style.display = "none";
-      if (compteLink) compteLink.style.display = "inline-block";
-      if (reservationLink) reservationLink.style.display = "inline-block";
-    } else {
-      if (loginLink) loginLink.style.display = "inline-block";
-      if (registerLink) registerLink.style.display = "inline-block";
-      if (compteLink) compteLink.style.display = "none";
-      if (reservationLink) reservationLink.style.display = "none";
-    }
-  });
+  // Injecte le CSS
+  const cssHref = "http://192.168.1.77/style.css";
+  if (!document.querySelector(`link[href="${cssHref}"]`)) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = cssHref;
+    document.head.appendChild(css);
+  }
+
+  // Injecte le HTML
+  fetch("http://192.168.1.77/login.html")
+    .then(res =&gt; res.text())
+    .then(html =&gt; {
+      document.getElementById("app-login").innerHTML = html;
+
+      // Injecte le JS
+      const script = document.createElement("script");
+      script.src = "http://192.168.1.77/login.js";
+      document.body.appendChild(script);
+    });
+});
 &lt;/script&gt;
-          </code></pre>
-        </li>
-        <li>
-          <strong>Insertion de la SPA :</strong>
-          <p>Dans votre template, insérez un conteneur (par exemple une <code>&lt;div id="spa-container"&gt;</code>) dans lequel vous chargerez dynamiquement les pages HTML se trouvant dans le dossier <code>spa-php/</code>.</p>
-        </li>
-      </ol>
-    </section>
-  </main>
+</code></pre>
 
-  <footer>
-    <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
-  </footer>
+  <h3>🆕 Page Register</h3>
+  <p>Remplace <code>login</code> par <code>register</code> dans le code ci-dessus.</p>
+
+  <h3>👤 Page Mon Compte</h3>
+  <p>Utilisez :</p>
+  <pre><code>&lt;div id="app-compte"&gt;&lt;/div&gt;
+&lt;script&gt;
+document.addEventListener("DOMContentLoaded", () =&gt; {
+  const token = localStorage.getItem("jwt");
+  if (!token) {
+    window.location.href = "/pages/login";
+    return;
+  }
+
+  const cssHref = "http://192.168.1.77/style.css";
+  if (!document.querySelector(`link[href="${cssHref}"]`)) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = cssHref;
+    document.head.appendChild(css);
+  }
+
+  fetch("http://192.168.1.77/compte.html")
+    .then(res =&gt; res.text())
+    .then(html =&gt; {
+      document.getElementById("app-compte").innerHTML = html;
+      const script = document.createElement("script");
+      script.src = "http://192.168.1.77/mon-compte.js";
+      document.body.appendChild(script);
+    });
+});
+&lt;/script&gt;
+</code></pre>
+
+  <h3>📅 Page Réserver</h3>
+  <p>Même principe avec :</p>
+  <ul>
+    <li>HTML : <code>reservation.html</code></li>
+    <li>JS : <code>reservation.js</code></li>
+  </ul>
+
+  <h3>🏠 Page Accueil</h3>
+  <p>Code à insérer dans la page d’accueil :</p>
+  <pre><code>&lt;div id="app-home"&gt;&lt;/div&gt;
+&lt;script&gt;
+document.addEventListener("DOMContentLoaded", () =&gt; {
+  const cssHref = "http://192.168.1.77/style.css";
+  if (!document.querySelector(`link[href="${cssHref}"]`)) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = cssHref;
+    document.head.appendChild(css);
+  }
+
+  fetch("http://192.168.1.77/accueil.html")
+    .then(res =&gt; res.text())
+    .then(html =&gt; {
+      document.getElementById("app-home").innerHTML = html;
+      const script = document.createElement("script");
+      script.src = "http://192.168.1.77/accueil.js";
+      document.body.appendChild(script);
+    });
+});
+&lt;/script&gt;
+</code></pre>
+
+  <h2>🎯 Résultat</h2>
+  <p>WebSiteBaker continue de gérer les menus et les articles de blog, pendant que les pages dynamiques (login, mon compte, réservation…) sont gérées par un système externe.</p>
+  <p>Le design reste cohérent grâce à l'import automatique du fichier <code>style.css</code>.</p>
+
+  <hr>
+  <p><em>Dernière mise à jour : Mars 2025 – Projet Tennis Booking</em></p>
+
 </body>
 </html>
