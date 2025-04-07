@@ -1,1 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cas Général - Intégration SI & CMS</title>
+  <meta name="description" content="Tutoriel pour intégrer dynamiquement un système d'information externe dans divers CMS (WebSiteBaker, WordPress, Joomla) via fetch()." />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>🌐 Cas Général - Intégration de notre SI avec nos CMS</h1>
+  </header>
+
+  <!-- Menu de navigation -->
+  <nav>
+    <ul>
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="wordpress.html">WordPress</a></li>
+      <li><a href="joomla.html">Joomla</a></li>
+      <li><a href="websitebaker.html">WebSiteBaker</a></li>
+      <li><a href="SI.html">Système d'Information</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- Partie 1 : Processus global -->
+    <section id="integration-generale">
+      <h2>1️⃣ Processus Global d'Intégration</h2>
+      <p>
+        Dans notre solution, chaque CMS (WebSiteBaker, WordPress, Joomla) est installé sur sa propre VM avec une IP dans le réseau 192.168.1.X, tout comme notre Système d'Information (SI) externe.
+        Le SI héberge l'ensemble des pages statiques et scripts (HTML, CSS, JS) et fournit un router (<code>router.js</code>) qui adapte dynamiquement les routes en fonction de l'IP de l'appelant.
+      </p>
+      <p>
+        Chaque CMS intègre dynamiquement le contenu du SI en utilisant <code>fetch()</code> pour récupérer les pages souhaitées, et en injectant le CSS et JS correspondant. Ainsi, il suffit d'ajouter dans les articles ou pages du CMS un petit script qui charge la vue du SI. Par exemple, pour la page <strong>Login</strong>, le code inséré est le suivant :
+      </p>
+
+      <h3>🔐 Exemple - Page Login</h3>
+      <pre><code>&lt;div id="app-login"&gt;&lt;/div&gt;
+&lt;script&gt;
+document.addEventListener("DOMContentLoaded", () =&gt; {
+  const token = localStorage.getItem("jwt");
+  if (token) {
+    window.location.href = "/pages/mon-compte";
+    return;
+  }
+
+  const cssHref = "http://192.168.1.77/style.css";
+  if (!document.querySelector(`link[href="${cssHref}"]`)) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = cssHref;
+    document.head.appendChild(css);
+  }
+
+  fetch("http://192.168.1.77/login.html")
+    .then(res =&gt; res.text())
+    .then(html =&gt; {
+      document.getElementById("app-login").innerHTML = html;
+      const script = document.createElement("script");
+      script.src = "http://192.168.1.77/login.js";
+      document.body.appendChild(script);
+    });
+});
+&lt;/script&gt;
+</code></pre>
+      <p>
+        Le même principe est appliqué pour les pages <strong>Register</strong>, <strong>Mon Compte</strong>, <strong>Réserver</strong> et <strong>Accueil</strong>, en remplaçant simplement les chemins des fichiers HTML et JS.
+      </p>
+      <p>
+        Le router (<code>router.js</code>) présent sur le SI détecte le CMS appelant grâce à la terminaison de l'IP (ex. se terminant par "35" pour WebSiteBaker ou "22" pour WordPress) et définit dynamiquement <code>ROUTE_PREFIX</code> et <code>ROUTE_SUFFIX</code> afin d'adapter les routes. Par exemple :
+      </p>
+      <pre><code>// router.js - Détection dynamique du CMS basé sur l'IP
+const ROUTE_PREFIX = (() =&gt; {
+  const host = window.location.hostname;
+  if (host.endsWith("35")) return "/pages";      // WebsiteBaker
+  if (host.endsWith("22")) return "/index.php";  // WordPress
+  return ""; // fallback
+})();
+
+const ROUTE_SUFFIX = (() =&gt; {
+  const host = window.location.hostname;
+  if (host.endsWith("35")) return ".php";       // WebsiteBaker
+  if (host.endsWith("22")) return "";           // WordPress
+  return ""; // fallback
+})();
+</code></pre>
+    </section>
+
+    <!-- Partie 2 : Cas d'utilisation sur un même serveur -->
+    <section id="integration-meme-serveur">
+      <h2>2️⃣ Cas d'Utilisation sur un Même Serveur</h2>
+      <p>
+        Lorsque vos CMS et le SI sont installés sur le même serveur, ils partagent la même adresse IP. Dans ce cas, la méthode de détection du CMS basée sur la terminaison de l'IP ne fonctionnera plus.
+      </p>
+      <p>
+        <strong>Conséquences :</strong>
+      </p>
+      <ul>
+        <li>La détection du CMS sera ambiguë, puisque tous les systèmes renverront la même IP.</li>
+        <li>Le router ne pourra pas définir correctement <code>ROUTE_PREFIX</code> et <code>ROUTE_SUFFIX</code>, et les liens générés risquent de ne pas correspondre aux routes attendues par le CMS.</li>
+      </ul>
+      <p>
+        <strong>Solutions possibles :</strong>
+      </p>
+      <ul>
+        <li>
+          <em>Utiliser des sous-domaines distincts :</em>  
+          Par exemple, assigner <code>wordpress.example.com</code>, <code>joomla.example.com</code> et <code>si.example.com</code> permettra de différencier les appels dans le router en détectant le sous-domaine.
+        </li>
+        <li>
+          <em>Utiliser des paramètres de configuration explicites :</em>  
+          Passer manuellement les valeurs de <code>ROUTE_PREFIX</code> et <code>ROUTE_SUFFIX</code> via un fichier de configuration ou des variables d'environnement, au lieu de se baser sur l'IP.
+        </li>
+      </ul>
+      <p>
+        Voici un exemple de modification du router pour une configuration par sous-domaine :
+      </p>
+      <pre><code>// router.js - Détection du CMS basée sur le sous-domaine
+const hostname = window.location.hostname;
+const ROUTE_PREFIX = (() =&gt; {
+  if (hostname.startsWith("websitebaker.")) return "/pages"; // WebsiteBaker
+  if (hostname.startsWith("wordpress.")) return "/index.php"; // WordPress
+  return ""; // fallback
+})();
+const ROUTE_SUFFIX = (() =&gt; {
+  if (hostname.startsWith("websitebaker.")) return ".php"; // WebsiteBaker
+  if (hostname.startsWith("wordpress.")) return "";     // WordPress
+  return ""; // fallback
+})();
+</code></pre>
+      <p>
+        En utilisant cette approche, même si tous les systèmes sont hébergés sur le même serveur, le router pourra correctement déterminer les routes en fonction du sous-domaine.
+      </p>
+    </section>
+
+    <section id="resultat">
+      <h2>🎯 Résultat Global</h2>
+      <p>
+        Le processus d'intégration permet aux CMS de charger dynamiquement les pages du SI sans modifier les fichiers internes du CMS.
+        Les menus et articles restent gérés par le CMS, tandis que le contenu dynamique est importé depuis le SI, garantissant une cohérence visuelle grâce au fichier <code>style.css</code> commun.
+      </p>
+      <p>
+        En cas d'hébergement sur un même serveur, la solution nécessite une adaptation de la méthode de détection (par exemple via des sous-domaines ou une configuration explicite) afin de garantir le bon fonctionnement du routage.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
+  </footer>
+
+</body>
+</html>
 
