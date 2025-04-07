@@ -7,73 +7,130 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Intégration avec Joomla</h1>
-  </header>
+  <h1>Guide d'intégration de votre SI dans Joomla</h1>
 
-  <!-- Menu de navigation -->
-  <nav>
-    <ul>
-      <li><a href="index.html">Accueil</a></li>
-      <li><a href="wordpress.html">WordPress</a></li>
-      <li><a href="joomla.html">Joomla</a></li>
-      <li><a href="websitebaker.html">WebsiteBaker</a></li>
-      <li><a href="SI.html">Système d'Information</a></li>
-    </ul>
-  </nav>
+  <p>Ce guide vous explique comment intégrer votre système d'information (SI) dans Joomla en réalisant les opérations suivantes :</p>
+  <ul>
+    <li>Création des articles pour chaque page (accueil, login, register, mon-compte, réserver).</li>
+    <li>Configuration du menu pour obtenir des URLs propres.</li>
+    <li>Création d'un module personnalisé global pour la navigation dynamique.</li>
+    <li>Utilisation de CodeMirror pour éviter le filtrage du code JavaScript.</li>
+  </ul>
 
-  <main>
-    <section id="presentation-joomla">
-      <h2>Intégration dans Joomla</h2>
-      <p>
-        Pour intégrer votre SPA dans Joomla, il est recommandé d’utiliser un module personnalisé ou le module HTML de base.
-        L’idée est d’injecter dynamiquement les pages HTML et d’appeler les routes de l’API.
-      </p>
-    </section>
+  <h2>1. Création des articles</h2>
+  <p>
+    Pour chaque page de votre SI (par exemple, <strong>Accueil</strong>, <strong>Login</strong>, <strong>Register</strong>, <strong>Mon Compte</strong> et <strong>Réserver</strong>), créez un article dans Joomla :
+  </p>
+  <ol>
+    <li>Connectez-vous à l'administration Joomla et accédez à <em>Contenu &gt; Articles</em>.</li>
+    <li>Cliquez sur <strong>Nouveau</strong> pour créer un nouvel article.</li>
+    <li>Collez le contenu HTML généré par votre SI dans l'éditeur.</li>
+    <li>Assurez-vous que l'éditeur est en mode <em>CodeMirror</em> (ou mode code) afin que Joomla ne filtre pas vos balises <code>&lt;script&gt;</code>.</li>
+    <li>Enregistrez l'article et affectez-lui un alias correspondant à la route désirée (ex. <code>login</code> pour la page de connexion).</li>
+  </ol>
 
-    <section id="instructions-joomla">
-      <h3>Étapes à suivre :</h3>
+  <h2>2. Configuration du menu</h2>
+  <p>
+    Pour obtenir des URLs propres et accessibles (ex. <code>/login</code>, <code>/register</code>...), suivez ces étapes :
+  </p>
+  <ol>
+    <li>
+      <strong>Activation des URLs SEF :</strong>
       <ol>
-        <li>
-          <strong>Créer un module personnalisé :</strong>
-          <p>Dans l’administration Joomla, rendez-vous dans <em>Extensions > Modules</em> et créez un nouveau module de type <strong>HTML personnalisé</strong>.</p>
-        </li>
-        <li>
-          <strong>Injection du code JavaScript :</strong>
-          <p>Ajoutez le script suivant dans le module pour gérer l’affichage des liens en fonction de l’authentification :</p>
-          <pre><code>
+        <li>Accédez à <em>Système &gt; Configuration globale</em>.</li>
+        <li>Dans l'onglet <strong>Site</strong>, activez l'option <strong>Search Engine Friendly URLs</strong>.</li>
+        <li>Activez également <strong>Use URL Rewriting</strong>.</li>
+        <li>Renommez le fichier <code>htaccess.txt</code> situé à la racine de Joomla en <code>.htaccess</code>.</li>
+      </ol>
+    </li>
+    <li>
+      <strong>Création des éléments de menu :</strong>
+      <p>
+        Accédez à <em>Menus &gt; Main Menu</em> (ou le menu que vous utilisez) et créez un nouvel élément de menu pour chaque page :
+      </p>
+      <ul>
+        <li>Pour <strong>Accueil</strong> : lien = <code>/</code> (ou l'alias correspondant).</li>
+        <li>Pour <strong>Login</strong> : lien = <code>/login</code>.</li>
+        <li>Pour <strong>Register</strong> : lien = <code>/register</code>.</li>
+        <li>Pour <strong>Mon Compte</strong> : lien = <code>/mon-compte</code>.</li>
+        <li>Pour <strong>Réserver</strong> : lien = <code>/reserver</code>.</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h2>3. Création d'un module personnalisé global pour la navigation</h2>
+  <p>
+    Vous pouvez créer un module de type <strong>HTML personnalisé</strong> afin d'afficher un menu dynamique qui cache ou affiche certains liens selon que l'utilisateur est connecté ou non.
+  </p>
+  <p>
+    Pour ce faire :
+  </p>
+  <ol>
+    <li>Accédez à <em>Extensions &gt; Modules</em>.</li>
+    <li>Cliquez sur <strong>Nouveau</strong> et sélectionnez le type <strong>Custom HTML</strong> (ou <strong>HTML personnalisé</strong>).</li>
+    <li>Dans le contenu du module, passez en mode <em>CodeMirror</em> (mode code) pour éviter que Joomla n'altère votre code.</li>
+    <li>Désactivez l'option <strong>Préparer le contenu</strong> (Prepare Content).</li>
+    <li>Collez le code suivant dans le module :</li>
+  </ol>
+
+  <pre>
+&lt;div id="global-menu"&gt;
+  &lt;ul&gt;
+    &lt;li id="menu-accueil"&gt;&lt;a href="/"&gt;Accueil&lt;/a&gt;&lt;/li&gt;
+    &lt;li id="menu-login"&gt;&lt;a href="/login"&gt;Login&lt;/a&gt;&lt;/li&gt;
+    &lt;li id="menu-register"&gt;&lt;a href="/register"&gt;Register&lt;/a&gt;&lt;/li&gt;
+    &lt;li id="menu-mon-compte"&gt;&lt;a href="/mon-compte"&gt;Mon Compte&lt;/a&gt;&lt;/li&gt;
+    &lt;li id="menu-reserver"&gt;&lt;a href="/reserver"&gt;Réserver&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+
 &lt;script&gt;
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", () =&gt; {
     const token = localStorage.getItem("jwt");
 
-    const loginLink = document.querySelector('a[href*="/login"]');
-    const registerLink = document.querySelector('a[href*="/inscription"]');
-    const compteLink = document.querySelector('a[href*="/mon-compte"]');
-    const reservationLink = document.querySelector('a[href*="/reserver"]');
-
     if (token) {
-      if (loginLink) loginLink.style.display = "none";
-      if (registerLink) registerLink.style.display = "none";
-      if (compteLink) compteLink.style.display = "inline-block";
-      if (reservationLink) reservationLink.style.display = "inline-block";
+      // Utilisateur connecté : masque Login et Register
+      const loginItem = document.getElementById("menu-login");
+      const registerItem = document.getElementById("menu-register");
+      if (loginItem) loginItem.style.display = "none";
+      if (registerItem) registerItem.style.display = "none";
     } else {
-      if (loginLink) loginLink.style.display = "inline-block";
-      if (registerLink) registerLink.style.display = "inline-block";
-      if (compteLink) compteLink.style.display = "none";
-      if (reservationLink) reservationLink.style.display = "none";
+      // Utilisateur non connecté : masque Mon Compte et Réserver
+      const compteItem = document.getElementById("menu-mon-compte");
+      const reserverItem = document.getElementById("menu-reserver");
+      if (compteItem) compteItem.style.display = "none";
+      if (reserverItem) reserverItem.style.display = "none";
     }
   });
 &lt;/script&gt;
-          </code></pre>
-        </li>
-        <li>
-          <strong>Injection de la SPA :</strong>
-          <p>Créez une position dans votre template Joomla où vous placerez la vue de votre SPA (fichiers contenus dans <code>spa-php/</code>). Cela peut se faire via un module ou en modifiant le template directement.</p>
-        </li>
-      </ol>
-    </section>
-  </main>
+  </pre>
 
+  <p>
+    Assurez-vous que le module est publié et affecté à une position globale dans votre template (par exemple, dans le header ou dans une position dédiée à la navigation).
+  </p>
+
+  <h2>4. Configuration de CodeMirror</h2>
+  <p>
+    Pour éviter que Joomla n'altère votre code JavaScript et HTML, il est recommandé d'utiliser l'éditeur CodeMirror :
+  </p>
+  <ol>
+    <li>Accédez à <em>Système &gt; Configuration globale</em>.</li>
+    <li>Dans l'onglet <strong>Site</strong>, repérez l'option <strong>Editeur par défaut</strong> et sélectionnez <strong>CodeMirror</strong>.</li>
+    <li>Enregistrez vos modifications.</li>
+  </ol>
+
+  <h2>Conclusion</h2>
+  <p>
+    En suivant ces étapes, vous pourrez intégrer votre système d'information dans Joomla avec :
+  </p>
+  <ul>
+    <li>Des articles pour chaque page de votre SI, créés en mode CodeMirror.</li>
+    <li>Un menu configuré pour des URLs propres (SEF) et avec des alias appropriés.</li>
+    <li>Un module de navigation dynamique qui affiche ou masque des liens en fonction de l'état de connexion de l'utilisateur.</li>
+  </ul>
+  <p>
+    Testez chaque étape pour vous assurer que tout fonctionne correctement. N'hésitez pas à consulter la documentation Joomla pour plus de détails sur la création d'articles, la configuration des menus et la gestion des modules.
+  </p>
   <footer>
     <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
   </footer>
