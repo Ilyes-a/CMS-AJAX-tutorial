@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Intégration pour WordPress</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Intégration SI dans WordPress avec HFCM</title>
+  <meta name="description" content="Intégration d'un système d'information externe dans WordPress via fetch() et l'injection de code avec le plugin Head, Footer and Post Injections (HFCM)." />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <header>
-    <h1>Intégration avec WordPress</h1>
+    <h1>🌐 Intégration SI dans WordPress</h1>
   </header>
 
   <!-- Menu de navigation -->
@@ -24,112 +26,137 @@
   </nav>
 
   <main>
-    <section id="contenu">
-      <h2>Contenu du projet</h2>
-      <pre><code>
-API_SYS_INFORMATION/
-├── api/                 # API REST PHP (login, register, mon-compte, reserver)
-│   ├── .htaccess
-│   ├── db.php
-│   ├── login.php
-│   ├── register.php
-│   ├── mon-compte.php
-│   ├── reserver.php
-│   └── utils.php
-├── spa-php/             # Pages SPA injectées dans WordPress
-│   ├── login.html / login.js
-│   ├── register.html / register.js
-│   ├── compte.html / mon-compte.js
-│   ├── reservation.html / reservation.js
-│   └── tennis_reservation.db
-├── composer.json / composer.lock
-└── vendor/              # Librairie JWT (Firebase PHP-JWT)
-      </code></pre>
+    <!-- Présentation du projet d'intégration pour WordPress -->
+    <section id="description">
+      <h2>Présentation du Projet</h2>
+      <p>
+        Ce projet permet de connecter un Système d’Information externe à WordPress sans altérer les fichiers internes du CMS.
+        Au lieu d'héberger et de gérer toutes les fonctionnalités directement dans WordPress, le contenu dynamique (pages de connexion, inscription, profil, réservation…) est géré par le SI.
+      </p>
+      <p>
+        L'objectif est d'avoir une intégration fluide et adaptable : WordPress se charge de la présentation (menus, articles, etc.) tandis que le SI fournit des pages et scripts via des appels fetch().
+      </p>
     </section>
 
-    <section id="installation">
-      <h2>Installation (Debian / Apache)</h2>
+    <!-- Étapes d'intégration dans WordPress -->
+    <section id="integration-steps">
+      <h2>Étapes d'Intégration dans WordPress</h2>
       <ol>
-        <li>Placer le code dans <code>/home/vboxuser/SI-backup/API_SYS_INFORMATION</code></li>
         <li>
-          Configurer Apache dans <code>/etc/apache2/sites-available/000-default.conf</code> :
-          <pre><code class="apache">
-Alias /api /home/vboxuser/SI-backup/API_SYS_INFORMATION/api
-
-<Directory /home/vboxuser/SI-backup/API_SYS_INFORMATION/api>
-    Options Indexes FollowSymLinks
-    AllowOverride All
-    Require all granted
-    Header always set Access-Control-Allow-Origin "*"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
-    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-</Directory>
-
-<VirtualHost *:80>
-    ServerAdmin webmaster@localhost
-    DocumentRoot /home/vboxuser/SI-backup/API_SYS_INFORMATION/spa-php
-
-    <Directory /home/vboxuser/SI-backup/API_SYS_INFORMATION/spa-php>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-        Header set Access-Control-Allow-Origin "*"
-    </Directory>
-
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-          </code></pre>
+          <strong>Installation du Plugin HFCM :</strong>
+          <p>
+            Installez le plugin <em>Head, Footer and Post Injections</em> depuis le répertoire WordPress. Ce plugin permettra d'injecter du code JavaScript global sur toutes les pages.
+          </p>
         </li>
-        <li>Appliquer les droits :
-          <pre><code>
-sudo chmod o+x /home/vboxuser
-sudo chmod -R o+rx /home/vboxuser/SI-backup
-sudo systemctl restart apache2
-          </code></pre>
+        <li>
+          <strong>Configuration du Global Header :</strong>
+          <p>
+            Créez un bloc "Global Header" dans HFCM et insérez-y le code JavaScript qui gère l'affichage conditionnel des liens de navigation. Le script vérifiera la présence d'un token (stocké via localStorage) pour déterminer si l'utilisateur est connecté ou non.
+          </p>
+        </li>
+        <li>
+          <strong>Utilisation de Fetch pour Charger le Contenu du SI :</strong>
+          <p>
+            Dans vos pages WordPress, insérez un petit script utilisant <code>fetch()</code> pour récupérer dynamiquement les pages du SI (par exemple, la page de login, d'inscription, etc.). Ainsi, le contenu affiché reste toujours à jour sans avoir à modifier manuellement chaque page.
+          </p>
         </li>
       </ol>
     </section>
 
-    <section id="integration">
-      <h2>Intégration dans WordPress</h2>
-      <p>Pour injecter les pages SPA dans WordPress, suivez ces étapes :</p>
-      <ol>
-        <li>Installez le plugin <strong>Head, Footer and Post Injections (HFCM)</strong>.</li>
-        <li>Créez un bloc "Global Header" et ajoutez-y le script suivant :</li>
-      </ol>
-      <pre><code>
+    <!-- Exemple de code d'intégration utilisant fetch -->
+    <section id="fetch-code">
+      <h2>Exemple de Code d'Intégration avec Fetch</h2>
+      <p>
+        Voici un exemple illustrant comment charger dynamiquement la page Login depuis le SI via <code>fetch()</code>. Ce code est inséré dans une page WordPress (via HFCM ou un template personnalisé).
+      </p>
+      <pre><code>&lt;div id="app-login"&gt;Chargement...&lt;/div&gt;
 &lt;script&gt;
-  document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("jwt");
+document.addEventListener("DOMContentLoaded", () =&gt; {
+  // Vérification de l'état de connexion via localStorage
+  const token = localStorage.getItem("jwt");
+  if (token) {
+    // Si l'utilisateur est connecté, redirigez vers la page "Mon Compte"
+    window.location.href = "/pages/mon-compte";
+    return;
+  }
+  
+  // Injection du CSS commun s'il n'est pas déjà présent
+  const cssHref = "http://192.168.1.77/style.css";
+  if (!document.querySelector(`link[href="${cssHref}"]`)) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = cssHref;
+    document.head.appendChild(css);
+  }
+  
+  // Récupération de la page Login depuis le SI
+  fetch("http://192.168.1.77/login.html")
+    .then(res =&gt; res.text())
+    .then(html =&gt; {
+      document.getElementById("app-login").innerHTML = html;
+      // Injection du script spécifique à la page Login
+      const script = document.createElement("script");
+      script.src = "http://192.168.1.77/login.js";
+      document.body.appendChild(script);
+    });
+});
+&lt;/script&gt;
+      </code></pre>
+      <p>
+        Ce code s'adapte automatiquement en fonction de l'état de l'utilisateur et charge le contenu à partir du SI hébergé à l'adresse spécifiée.
+      </p>
+    </section>
 
+    <!-- Intégration avec HFCM pour la gestion du menu -->
+    <section id="hfcm-integration">
+      <h2>Intégration via HFCM pour la Gestion du Menu</h2>
+      <p>
+        Grâce au plugin HFCM, nous injectons un script global dans l'en-tête qui gère la visibilité des liens du menu. Par exemple, les liens "Login" et "Register" sont masqués lorsque l'utilisateur est connecté, et les liens "Mon Compte" et "Réserver" sont affichés.
+      </p>
+      <pre><code>&lt;script&gt;
+  document.addEventListener("DOMContentLoaded", () =&gt; {
+    const token = localStorage.getItem("jwt");
+    // Sélection des liens du menu dans WordPress
     const loginLink = document.querySelector('a[href*="/login"]');
     const registerLink = document.querySelector('a[href*="/inscription"]');
     const compteLink = document.querySelector('a[href*="/mon-compte"]');
     const reservationLink = document.querySelector('a[href*="/reserver"]');
-    const bookButton = document.querySelector('a[href*="/reserver/"].wp-block-button__link');
-
+    
     if (token) {
       if (loginLink) loginLink.style.display = "none";
       if (registerLink) registerLink.style.display = "none";
       if (compteLink) compteLink.style.display = "inline-block";
       if (reservationLink) reservationLink.style.display = "inline-block";
-      if (bookButton) bookButton.style.display = "inline-block";
     } else {
       if (loginLink) loginLink.style.display = "inline-block";
       if (registerLink) registerLink.style.display = "inline-block";
       if (compteLink) compteLink.style.display = "none";
       if (reservationLink) reservationLink.style.display = "none";
-      if (bookButton) bookButton.style.display = "none";
     }
   });
 &lt;/script&gt;
       </code></pre>
+      <p>
+        Ce script est injecté globalement par HFCM, ce qui évite de modifier chaque page individuellement et garantit que la navigation s'adapte automatiquement à l'état de connexion de l'utilisateur.
+      </p>
+    </section>
+
+    <!-- Résumé de l'intégration -->
+    <section id="resume">
+      <h2>Résumé de l'Intégration</h2>
+      <p>
+        En résumé, notre approche permet d'externaliser des fonctionnalités dynamiques vers un Système d’Information dédié tout en conservant WordPress comme gestionnaire de contenu principal.
+        L'utilisation des appels <code>fetch()</code> pour charger les pages du SI, combinée à l'injection du code via le plugin HFCM, assure une intégration fluide et évolutive.
+      </p>
+      <p>
+        Cette méthode offre une grande flexibilité : toute mise à jour du SI se répercute automatiquement sur le site WordPress, sans nécessiter de changements dans le CMS.
+      </p>
     </section>
   </main>
 
   <footer>
     <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
   </footer>
+
 </body>
 </html>
