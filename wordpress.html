@@ -72,14 +72,6 @@
       <pre><code>&lt;div id="app-login"&gt;Chargement...&lt;/div&gt;
 &lt;script&gt;
 document.addEventListener("DOMContentLoaded", () =&gt; {
-  // Vérification de l'état de connexion via localStorage
-  const token = localStorage.getItem("jwt");
-  if (token) {
-    // Si l'utilisateur est connecté, redirigez vers la page "Mon Compte"
-    window.location.href = "/pages/mon-compte";
-    return;
-  }
-  
   // Injection du CSS commun s'il n'est pas déjà présent
   const cssHref = "http://192.168.1.77/style.css";
   if (!document.querySelector(`link[href="${cssHref}"]`)) {
