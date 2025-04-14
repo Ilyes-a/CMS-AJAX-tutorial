@@ -1,98 +1,76 @@
 /* Style général */
 body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 0;
-    background: #f4f4f4;
-    color: #333;
-  }
-  
-  /* En-tête */
-  header {
-    background: #35424a;
-    color: #fff;
-    padding: 20px 0;
-    text-align: center;
-  }
-  
-  /* Message d'avertissement */
-  .warning {
-    color: #e74c3c;
-    font-weight: bold;
-    margin-top: 10px;
-  }
-  
-  /* Navigation principale */
-  nav {
-    background: #e8491d;
-    padding: 10px;
-    text-align: center;
-  }
-  
-  nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  nav ul li {
-    display: inline;
-    margin: 0 15px;
-  }
-  
-  nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-  }
-  
-  nav ul li a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Contenu principal */
-  main {
-    max-width: 1000px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  
-  section {
-    margin-bottom: 40px;
-  }
-  
-  h2 {
-    border-bottom: 2px solid #e8491d;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-  }
-  
-  /* Styles pour les blocs de code */
-  pre {
-    background: #333;
-    color: #f4f4f4;
-    padding: 10px;
-    overflow-x: auto;
-  }
-  
-  code {
-    font-family: Consolas, "Courier New", monospace;
-    font-size: 0.9em;
-  }
-  
-  /* Style spécifique pour le code Apache */
-  code.apache {
-    font-size: 0.85em;
-  }
-  
-  /* Pied de page */
-  footer {
-    background: #35424a;
-    color: #fff;
-    text-align: center;
-    padding: 10px;
-  }
-  
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background: #f4f4f4;
+  color: #333;
+}
+
+/* En-tête */
+header {
+  background: #35424a;
+  color: #fff;
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* Navigation */
+nav {
+  background: #e8491d;
+  padding: 10px;
+  text-align: center;
+}
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+nav ul li {
+  display: inline-block;
+  margin: 0 15px;
+}
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+}
+nav ul li a.active,
+nav ul li a:hover {
+  text-decoration: underline;
+}
+
+/* Contenu principal */
+main {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+main section {
+  margin-bottom: 40px;
+}
+h1, h2, h3 {
+  color: #35424a;
+}
+pre {
+  background: #333;
+  color: #f4f4f4;
+  padding: 10px;
+  overflow-x: auto;
+}
+code {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+/* Pied de page */
+footer {
+  background: #35424a;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  margin-top: 20px;
+}
