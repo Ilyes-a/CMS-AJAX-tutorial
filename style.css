@@ -36,10 +36,17 @@ nav ul li a {
   text-decoration: none;
   color: #333;
   font-weight: normal;
+  position: relative;
+  transition: all 0.3s ease;
+  padding-bottom: 2px;
 }
-nav ul li a.active,
-nav ul li a:hover {
+
+/* Effet de survol avec animation */
+nav ul li a:hover,
+nav ul li a.active {
   border-bottom: 1px solid #333;
+  color: #000;
+  transform: translateY(-2px);
 }
 
 /* Contenu principal */
