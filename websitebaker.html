@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () =&gt; {
       </p>
       <pre><code>
 // Contenu du droplet JS_Injection 
-$script = '<script type="text/javascript">
+$script = '
 document.addEventListener("DOMContentLoaded", function(){
   var token = localStorage.getItem("jwt");
   var loginLink = document.querySelector("a[href*=\"/login\"]");
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function(){
     if (reserverLink) { reserverLink.style.display = "none"; }
   }
 });
-</script>';
+';
 return $script;
       </code></pre>
       <p>
