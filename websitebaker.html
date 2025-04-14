@@ -25,6 +25,7 @@
   </nav>
   
   <main>
+    <!-- Vue d'ensemble -->
     <section id="wsb-overview">
       <h2>Vue d'ensemble</h2>
       <p>
@@ -32,14 +33,54 @@
       </p>
     </section>
     
+    <!-- Navigation et gestion conditionnelle des onglets -->
+    <section id="navigation">
+      <h2>Gestion de la Navigation</h2>
+      <p>
+        Pour offrir une expérience utilisateur cohérente, nous avons mis en place un script JavaScript qui, lors du chargement de la page, vérifie l'état de connexion de l'utilisateur (via un token stocké en <code>localStorage</code>). Selon que l'utilisateur est connecté ou non, certains onglets du menu sont affichés ou masqués.
+      </p>
+      <p>
+        Par exemple, si l'utilisateur est connecté, les liens "Login" et "Register" sont masqués, tandis que les liens "Mon Compte" et "Réserver" sont affichés. Dans le cas contraire, seule l'option de connexion ou d'inscription sera visible.
+      </p>
+      <p>
+        Cette logique est généralement injectée globalement via un droplet ou directement dans le footer.
+      </p>
+      <pre><code>
+// Exemple de code pour la gestion du menu :
+document.addEventListener("DOMContentLoaded", function(){
+  var token = localStorage.getItem("jwt");
+  var loginLink = document.querySelector('a[href*="/login"]');
+  var registerLink = document.querySelector('a[href*="/register"]');
+  var compteLink = document.querySelector('a[href*="/mon-compte"]');
+  var reserverLink = document.querySelector('a[href*="/reserver"]');
+
+  if (token) {
+    if (loginLink) { loginLink.style.display = "none"; }
+    if (registerLink) { registerLink.style.display = "none"; }
+    if (compteLink) { compteLink.style.display = "inline-block"; }
+    if (reserverLink) { reserverLink.style.display = "inline-block"; }
+  } else {
+    if (loginLink) { loginLink.style.display = "inline-block"; }
+    if (registerLink) { registerLink.style.display = "inline-block"; }
+    if (compteLink) { compteLink.style.display = "none"; }
+    if (reserverLink) { reserverLink.style.display = "none"; }
+  }
+});
+      </code></pre>
+    </section>
+    
+    <!-- Instructions d'intégration -->
     <section id="wsb-instructions">
       <h2>Instructions d'Intégration</h2>
       <ol>
         <li>
-          <strong>Créer les pages :</strong> Dans l'interface d'administration, créez les pages (Accueil, Login, Register, Mon Compte, Réserver) et insérez un script pour charger dynamiquement la vue depuis le SI.
+          <strong>Créer les pages :</strong>  
+          Dans l'administration de WebSiteBaker, créez les pages suivantes :
+          <em>Accueil, Login, Register, Mon Compte, Réserver</em> et insérez un script pour charger dynamiquement la vue depuis le SI.
         </li>
         <li>
-          <strong>Configurer Apache :</strong> Ajoutez un alias pour rediriger vers le dossier API du SI. Par exemple, dans <code>/etc/apache2/sites-available/000-default.conf</code> :
+          <strong>Configurer Apache :</strong>  
+          Ajoutez un alias dans le fichier <code>/etc/apache2/sites-available/000-default.conf</code> pour rediriger vers le dossier API du SI. Par exemple :
           <pre><code class="apache">
 Alias /api /chemin/vers/API_SYS_INFORMATION/api
 
@@ -52,22 +93,23 @@ Alias /api /chemin/vers/API_SYS_INFORMATION/api
           </code></pre>
         </li>
         <li>
-          <strong>Code d'injection :</strong> Voici un exemple pour la page Login :
+          <strong>Code d'injection :</strong>  
+          Voici un exemple pour la page Login :
           <pre><code>&lt;div id="app-login"&gt;Chargement...&lt;/div&gt;
 &lt;script&gt;
-document.addEventListener("DOMContentLoaded", () =&gt; {
-  const cssHref = "http://192.168.1.77/style.css";
+document.addEventListener("DOMContentLoaded", function(){
+  var cssHref = "http://192.168.1.77/style.css";
   if (!document.querySelector(`link[href="${cssHref}"]`)) {
-    const css = document.createElement("link");
+    var css = document.createElement("link");
     css.rel = "stylesheet";
     css.href = cssHref;
     document.head.appendChild(css);
   }
   fetch("http://192.168.1.77/login.html")
-    .then(res =&gt; res.text())
-    .then(html =&gt; {
+    .then(function(res){ return res.text(); })
+    .then(function(html){
       document.getElementById("app-login").innerHTML = html;
-      const script = document.createElement("script");
+      var script = document.createElement("script");
       script.src = "http://192.168.1.77/login.js";
       document.body.appendChild(script);
     });
