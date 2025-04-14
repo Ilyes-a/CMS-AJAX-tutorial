@@ -1,65 +1,61 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Intégrer un système externe dans WebSiteBaker</title>
-  <meta name="description" content="Tutoriel pour intégrer un système externe dans WebSiteBaker en important dynamiquement des fichiers HTML, CSS et JS." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Intégration SI dans WebSiteBaker</title>
+  <meta name="description" content="Tutoriel pour intégrer un système externe dans WebSiteBaker en important dynamiquement des vues HTML, CSS et JS." />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <header>
-    <h1>🌐 Intégration avec WebSiteBaker</h1>
+    <h1>Intégration SI dans WebSiteBaker</h1>
   </header>
-
-  <!-- Menu de navigation -->
+  
+  <!-- Menu de navigation commun -->
   <nav>
     <ul>
       <li><a href="index.html">Accueil</a></li>
       <li><a href="wordpress.html">WordPress</a></li>
       <li><a href="joomla.html">Joomla</a></li>
-      <li><a href="websitebaker.html">WebsiteBaker</a></li>
-      <li><a href="SI.html">Système d'Information</a></li>
+      <li><a href="websitebaker.html" class="active">WebSiteBaker</a></li>
+      <li><a href="SI.html">Configuration SI</a></li>
       <li><a href="CasGen.html">Cas Général</a></li>
-  </ul>
+    </ul>
   </nav>
-
+  
   <main>
-    <section id="presentation-websitebaker">
-      <h2>Intégration dans WebSiteBaker</h2>
+    <section id="wsb-overview">
+      <h2>Vue d'ensemble</h2>
       <p>
-        Ce guide vous montre comment intégrer des vues HTML hébergées sur un autre serveur (comme un SI externe)
-        dans un site <strong>WebSiteBaker</strong>, sans modifier les fichiers internes du CMS.
+        Dans WebSiteBaker, l'intégration se fait en configurant des pages qui incorporent dynamiquement le contenu du SI via <code>fetch()</code>. WebSiteBaker gère la présentation statique, tandis que le contenu dynamique est importé depuis le SI.
       </p>
     </section>
+    
+    <section id="wsb-instructions">
+      <h2>Instructions d'Intégration</h2>
+      <ol>
+        <li>
+          <strong>Créer les pages :</strong> Dans l'interface d'administration, créez les pages (Accueil, Login, Register, Mon Compte, Réserver) et insérez un script pour charger dynamiquement la vue depuis le SI.
+        </li>
+        <li>
+          <strong>Configurer Apache :</strong> Ajoutez un alias pour rediriger vers le dossier API du SI. Par exemple, dans <code>/etc/apache2/sites-available/000-default.conf</code> :
+          <pre><code class="apache">
+Alias /api /chemin/vers/API_SYS_INFORMATION/api
 
-    <section id="creation-pages">
-      <h2>1️⃣ Créer les pages dans WebSiteBaker</h2>
-      <p>Dans l’interface d’administration, créez les pages suivantes :</p>
-      <ul>
-        <li><strong>Accueil</strong></li>
-        <li><strong>Login</strong></li>
-        <li><strong>Register</strong></li>
-        <li><strong>Mon compte</strong></li>
-        <li><strong>Réserver</strong></li>
-      </ul>
-      <p>Pour chaque page, vous allez y insérer un petit script HTML + JS pour charger dynamiquement la vue correspondante.</p>
-    </section>
-
-    <section id="code-a-inserer">
-      <h2>2️⃣ Code à insérer dans chaque page</h2>
-
-      <h3>🔐 Page Login</h3>
-      <pre><code>&lt;div id="app-login"&gt;&lt;/div&gt;
+&lt;Directory /chemin/vers/API_SYS_INFORMATION/api&gt;
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+    Header always set Access-Control-Allow-Origin "*"
+&lt;/Directory&gt;
+          </code></pre>
+        </li>
+        <li>
+          <strong>Code d'injection :</strong> Voici un exemple pour la page Login :
+          <pre><code>&lt;div id="app-login"&gt;Chargement...&lt;/div&gt;
 &lt;script&gt;
 document.addEventListener("DOMContentLoaded", () =&gt; {
-  const token = localStorage.getItem("jwt");
-  if (token) {
-    window.location.href = "/pages/mon-compte";
-    return;
-  }
-
   const cssHref = "http://192.168.1.77/style.css";
   if (!document.querySelector(`link[href="${cssHref}"]`)) {
     const css = document.createElement("link");
@@ -67,95 +63,24 @@ document.addEventListener("DOMContentLoaded", () =&gt; {
     css.href = cssHref;
     document.head.appendChild(css);
   }
-
   fetch("http://192.168.1.77/login.html")
     .then(res =&gt; res.text())
     .then(html =&gt; {
       document.getElementById("app-login").innerHTML = html;
-
       const script = document.createElement("script");
       script.src = "http://192.168.1.77/login.js";
       document.body.appendChild(script);
     });
 });
 &lt;/script&gt;
-</code></pre>
-
-      <h3>🆕 Page Register</h3>
-      <p>Remplace <code>login</code> par <code>register</code> dans le code ci-dessus.</p>
-
-      <h3>👤 Page Mon Compte</h3>
-      <pre><code>&lt;div id="app-compte"&gt;&lt;/div&gt;
-&lt;script&gt;
-document.addEventListener("DOMContentLoaded", () =&gt; {
-  const token = localStorage.getItem("jwt");
-  if (!token) {
-    window.location.href = "/pages/login";
-    return;
-  }
-
-  const cssHref = "http://192.168.1.77/style.css";
-  if (!document.querySelector(`link[href="${cssHref}"]`)) {
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href = cssHref;
-    document.head.appendChild(css);
-  }
-
-  fetch("http://192.168.1.77/compte.html")
-    .then(res =&gt; res.text())
-    .then(html =&gt; {
-      document.getElementById("app-compte").innerHTML = html;
-      const script = document.createElement("script");
-      script.src = "http://192.168.1.77/mon-compte.js";
-      document.body.appendChild(script);
-    });
-});
-&lt;/script&gt;
-</code></pre>
-
-      <h3>📅 Page Réserver</h3>
-      <p>Même principe avec :</p>
-      <ul>
-        <li>HTML : <code>reservation.html</code></li>
-        <li>JS : <code>reservation.js</code></li>
-      </ul>
-
-      <h3>🏠 Page Accueil</h3>
-      <pre><code>&lt;div id="app-home"&gt;&lt;/div&gt;
-&lt;script&gt;
-document.addEventListener("DOMContentLoaded", () =&gt; {
-  const cssHref = "http://192.168.1.77/style.css";
-  if (!document.querySelector(`link[href="${cssHref}"]`)) {
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href = cssHref;
-    document.head.appendChild(css);
-  }
-
-  fetch("http://192.168.1.77/accueil.html")
-    .then(res =&gt; res.text())
-    .then(html =&gt; {
-      document.getElementById("app-home").innerHTML = html;
-      const script = document.createElement("script");
-      script.src = "http://192.168.1.77/accueil.js";
-      document.body.appendChild(script);
-    });
-});
-&lt;/script&gt;
-</code></pre>
-    </section>
-
-    <section id="resultat">
-      <h2>🎯 Résultat</h2>
-      <p>WebSiteBaker continue de gérer les menus et les articles de blog, pendant que les pages dynamiques (login, mon compte, réservation…) sont gérées par un système externe.</p>
-      <p>Le design reste cohérent grâce à l'import automatique du fichier <code>style.css</code>.</p>
+          </code></pre>
+        </li>
+      </ol>
     </section>
   </main>
-
+  
   <footer>
     <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
   </footer>
-
 </body>
 </html>
