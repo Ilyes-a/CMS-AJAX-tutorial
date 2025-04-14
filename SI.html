@@ -3,30 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Configuration du Système d'Information (SI)</title>
+  <title>Configuration du SI</title>
+  <meta name="description" content="Architecture et configuration du Système d'Information externe." />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Configuration et Architecture du Système d'Information (SI)</h1>
+    <h1>Configuration et Architecture du SI</h1>
   </header>
-
-  <!-- Menu de navigation -->
+  
+  <!-- Menu de navigation commun -->
   <nav>
     <ul>
       <li><a href="index.html">Accueil</a></li>
       <li><a href="wordpress.html">WordPress</a></li>
       <li><a href="joomla.html">Joomla</a></li>
       <li><a href="websitebaker.html">WebSiteBaker</a></li>
-      <li><a href="SI.html">Système d'Information</a></li>
+      <li><a href="SI.html" class="active">Configuration SI</a></li>
       <li><a href="CasGen.html">Cas Général</a></li>
     </ul>
   </nav>
-
+  
   <main>
-    <section id="architecture">
-      <h2>📁 Architecture des fichiers</h2>
-      <pre><code>CMS-AJAX/
+    <section id="si-architecture">
+      <h2>Architecture des Fichiers</h2>
+      <pre><code>
+CMS-AJAX/
 ├── API_SYS_INFORMATION/
 │   ├── api/
 │   │   ├── login.php
@@ -44,54 +46,21 @@
 │   │   ├── router.js
 │   │   └── style.css
 │   └── redirect.php
-└── tennis_reservation.db</code></pre>
+└── tennis_reservation.db
+      </code></pre>
     </section>
-
-    <section id="fonctionnement">
-      <h2>⚙️ Fonctionnement général</h2>
+    
+    <section id="si-fonctionnement">
+      <h2>Fonctionnement Général</h2>
       <ul>
-        <li>Les <strong>fichiers PHP</strong> situés dans <code>/api</code> traitent les appels AJAX (authentification, réservation, etc.).</li>
-        <li>Les <strong>vues HTML</strong> sont dans <code>/spa-php</code> et sont injectées dans les CMS via fetch.</li>
-        <li><code>router.js</code> gère dynamiquement les chemins (WordPress: <code>/index.php</code>, WSB: <code>/pages</code>).</li>
-        <li><code>redirect.php</code> est un proxy de redirection propre à WSB pour simuler les routes classiques.</li>
+        <li><strong>API :</strong> Gère les appels AJAX (authentification, inscription, réservation, etc.).</li>
+        <li><strong>Vues SPA :</strong> Les pages HTML sont chargées dynamiquement via <code>fetch()</code>.</li>
+        <li><strong>Router :</strong> Le fichier <code>router.js</code> adapte les chemins en fonction du CMS appelant.</li>
+        <li><strong>Redirect :</strong> <code>redirect.php</code> permet de simuler des routes classiques (utile pour WebSiteBaker).</li>
       </ul>
     </section>
-
-    <section id="routes">
-      <h2>🧭 Gestion dynamique des routes</h2>
-      <h3>🔁 redirect.php</h3>
-      <pre><code>&lt;?php
-$uri = $_SERVER['REQUEST_URI'];
-$parts = explode('/', $uri);
-$route = end($parts);
-header("Location: /pages/$route");
-exit;</code></pre>
-      <h3>📍 router.js</h3>
-      <pre><code>const ROUTE_PREFIX = (() => {
-  const current = window.location.pathname;
-  if (current.includes("/pages/")) return "/pages";
-  if (current.includes("/index.php/")) return "/index.php";
-  return "";
-})();</code></pre>
-    </section>
-
-    <section id="style">
-      <h2>🎨 Fichier CSS commun</h2>
-      <pre><code>const cssHref = "http://192.168.1.77/style.css";
-if (!document.querySelector(`link[href="${cssHref}"]`)) {
-  const css = document.createElement("link");
-  css.rel = "stylesheet";
-  css.href = cssHref;
-  document.head.appendChild(css);
-}</code></pre>
-    </section>
-
-    <section id="objectif">
-      <h2>🚀 Objectif final</h2>
-      <p>Garder le CMS comme simple coquille (blog, menus) et déléguer toute la logique métier (authentification, réservation) au SI.</p>
-    </section>
   </main>
-
+  
   <footer>
     <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
   </footer>
