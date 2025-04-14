@@ -3,76 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Intégration pour Joomla</title>
+  <title>Intégration SI dans Joomla</title>
+  <meta name="description" content="Guide pour intégrer un SI externe dans Joomla en utilisant des articles et modules personnalisés, avec CodeMirror." />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Intégration avec Joomla</h1>
+    <h1>Intégration SI dans Joomla</h1>
   </header>
-
-  <!-- Menu de navigation -->
+  
+  <!-- Menu de navigation commun -->
   <nav>
     <ul>
       <li><a href="index.html">Accueil</a></li>
       <li><a href="wordpress.html">WordPress</a></li>
-      <li><a href="joomla.html">Joomla</a></li>
+      <li><a href="joomla.html" class="active">Joomla</a></li>
       <li><a href="websitebaker.html">WebSiteBaker</a></li>
-      <li><a href="SI.html">Système d'Information</a></li>
+      <li><a href="SI.html">Configuration SI</a></li>
       <li><a href="CasGen.html">Cas Général</a></li>
     </ul>
   </nav>
-
+  
   <main>
-    <section id="contenu">
-      <h2>Guide d'intégration de votre SI dans Joomla</h2>
-
-      <p>Ce guide vous explique comment intégrer votre système d'information (SI) dans Joomla en réalisant les opérations suivantes :</p>
+    <section id="joomla-overview">
+      <h2>Vue d'ensemble</h2>
+      <p>
+        Dans Joomla, l'intégration se fait principalement en :
+      </p>
       <ul>
-        <li>Création des articles pour chaque page (accueil, login, register, mon-compte, réserver).</li>
-        <li>Configuration du menu pour obtenir des URLs propres.</li>
-        <li>Création d'un module personnalisé global pour la navigation dynamique.</li>
-        <li>Utilisation de CodeMirror pour éviter le filtrage du code JavaScript.</li>
+        <li>Créant des articles pour chaque page (Login, Register, Mon Compte, Réserver, Accueil).</li>
+        <li>Utilisant des modules HTML personnalisés pour injecter du JavaScript (en mode CodeMirror pour éviter le filtrage).</li>
       </ul>
-
-      <h3>1. Création des articles</h3>
-      <p>
-        Pour chaque page de votre SI (Accueil, Login, Register, Mon Compte, Réserver), créez un article dans Joomla :
-      </p>
+    </section>
+    
+    <section id="joomla-instructions">
+      <h2>Instructions</h2>
+      <h3>Création des Articles</h3>
       <ol>
-        <li>Connectez-vous à l'administration Joomla et accédez à <em>Contenu &gt; Articles</em>.</li>
-        <li>Cliquez sur <strong>Nouveau</strong> pour créer un article.</li>
-        <li>Collez le contenu HTML généré par votre SI dans l'éditeur.</li>
-        <li>Assurez-vous que l'éditeur est en mode <em>CodeMirror</em>.</li>
-        <li>Enregistrez l'article avec un alias correspondant (ex : <code>login</code>).</li>
+        <li>Accédez à <em>Contenu &gt; Articles</em> dans l'administration.</li>
+        <li>Cliquez sur <strong>Nouveau</strong> et collez le contenu HTML récupéré via <code>fetch()</code>.</li>
+        <li>Utilisez CodeMirror pour ne pas altérer votre code.</li>
+        <li>Attribuez un alias pertinent (par ex. <code>login</code>).</li>
       </ol>
-
-      <h3>2. Configuration du menu</h3>
-      <p>
-        Pour obtenir des URLs propres (SEF), procédez ainsi :
-      </p>
+      
+      <h3>Configuration du Menu</h3>
       <ol>
-        <li>Accédez à <em>Système &gt; Configuration globale</em>.</li>
-        <li>Dans l'onglet <strong>Site</strong>, activez :
-          <ul>
-            <li><strong>Search Engine Friendly URLs</strong></li>
-            <li><strong>Use URL Rewriting</strong></li>
-          </ul>
-        </li>
-        <li>Renommez le fichier <code>htaccess.txt</code> en <code>.htaccess</code>.</li>
-        <li>Créez des éléments de menu dans <em>Menus &gt; Main Menu</em> avec les bons alias (login, register...)</li>
+        <li>Activez les URLs SEF dans <em>Configuration Globale</em> et renommez <code>htaccess.txt</code> en <code>.htaccess</code>.</li>
+        <li>Créez des éléments de menu correspondant à vos articles.</li>
       </ol>
-
-      <h3>3. Module personnalisé global pour la navigation</h3>
-      <p>
-        Créez un module de type <strong>HTML personnalisé</strong> :
-      </p>
+      
+      <h3>Module de Navigation Global</h3>
       <ol>
-        <li>Accédez à <em>Extensions &gt; Modules</em>.</li>
-        <li>Créez un nouveau module HTML personnalisé.</li>
-        <li>Passez en mode CodeMirror et désactivez <strong>Préparer le contenu</strong>.</li>
-        <li>Collez ce code :
-          <pre><code>&lt;div id="global-menu"&gt;
+        <li>Créez un module HTML personnalisé via <em>Extensions &gt; Modules</em>.</li>
+        <li>Désactivez l'option <strong>Préparer le contenu</strong> et passez en mode CodeMirror.</li>
+        <li>Collez le code suivant pour adapter la navigation :</li>
+      </ol>
+      <pre><code>&lt;div id="global-menu"&gt;
   &lt;ul&gt;
     &lt;li id="menu-accueil"&gt;&lt;a href="/"&gt;Accueil&lt;/a&gt;&lt;/li&gt;
     &lt;li id="menu-login"&gt;&lt;a href="/login"&gt;Login&lt;/a&gt;&lt;/li&gt;
@@ -83,40 +69,21 @@
 &lt;/div&gt;
 
 &lt;script&gt;
-  document.addEventListener("DOMContentLoaded", () =&gt; {
-    const token = localStorage.getItem("jwt");
-
-    if (token) {
-      document.getElementById("menu-login").style.display = "none";
-      document.getElementById("menu-register").style.display = "none";
-    } else {
-      document.getElementById("menu-mon-compte").style.display = "none";
-      document.getElementById("menu-reserver").style.display = "none";
-    }
-  });
+document.addEventListener("DOMContentLoaded", () =&gt; {
+  const token = localStorage.getItem("jwt");
+  if (token) {
+    document.getElementById("menu-login").style.display = "none";
+    document.getElementById("menu-register").style.display = "none";
+  } else {
+    document.getElementById("menu-mon-compte").style.display = "none";
+    document.getElementById("menu-reserver").style.display = "none";
+  }
+});
 &lt;/script&gt;
-          </code></pre>
-        </li>
-      </ol>
-
-      <h3>4. Configuration de CodeMirror</h3>
-      <ol>
-        <li>Accédez à <em>Système &gt; Configuration globale</em>.</li>
-        <li>Sous <strong>Editeur par défaut</strong>, choisissez <strong>CodeMirror</strong>.</li>
-      </ol>
-
-      <h3>Conclusion</h3>
-      <p>
-        Vous pouvez maintenant intégrer efficacement votre SI dans Joomla avec :
-      </p>
-      <ul>
-        <li>Des articles en mode code (non filtrés)</li>
-        <li>Des URLs propres via les menus et SEF</li>
-        <li>Un module de menu dynamique en fonction de l'état de connexion</li>
-      </ul>
+      </code></pre>
     </section>
   </main>
-
+  
   <footer>
     <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
   </footer>
