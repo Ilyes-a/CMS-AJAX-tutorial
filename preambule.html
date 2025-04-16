@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prélude – Installation & Intégration pour WebsiteBaker</title>
+  <meta name="description" content="Guide d'installation de Joomla, WebsiteBaker et WordPress, et mise en place d'une sécurité HTTPS. Explications de la gestion dynamique de la navigation via droplet." />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Prélude – Installation & Intégration pour WebsiteBaker</h1>
+  </header>
+  
+  <!-- Menu de navigation commun -->
+  <nav>
+    <ul>
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="joomla.html">Joomla</a></li>
+      <li><a href="websitebaker.html" class="active">WebSiteBaker</a></li>
+      <li><a href="wordpress.html">WordPress</a></li>
+      <li><a href="SI.html">Configuration SI</a></li>
+      <li><a href="CasGen.html">Cas Général</a></li>
+      <li><a href="preambule.html">Prélude</a></li>
+    </ul>
+  </nav>
+  
+  <main>
+    <!-- Présentation du projet -->
+    <section id="presentation-projet">
+      <h2>Présentation du Projet</h2>
+      <p>
+        Ce projet vise à connecter un Système d’Information (SI) externe – qui gère des fonctionnalités critiques (authentification, réservation, gestion des profils) via une API PHP/AJAX en mode Single Page Application – aux CMS populaires tels que Joomla, WebsiteBaker et WordPress.  
+      </p>
+      <p>
+        L’objectif est de centraliser la logique métier et le contenu dynamique dans le SI, tout en laissant le CMS gérer la présentation statique (menus, articles, blog) sans modification du code natif.
+      </p>
+    </section>
+    
+    <!-- Installation des CMS -->
+    <section id="installation-cms">
+      <h2>Installation des CMS</h2>
+      <p>
+        Les étapes d'installation de Joomla, WebsiteBaker et WordPress sont similaires :
+      </p>
+      <ul>
+        <li><strong>Téléchargement</strong> du CMS depuis son site officiel.</li>
+        <li><strong>Transfert</strong> des fichiers sur votre serveur via FTP ou directement sur la machine.</li>
+        <li>Création d'une <strong>base de données</strong> dédiée et configuration du fichier de connexion (ex. <code>configuration.php</code> pour Joomla, <code>wp-config.php</code> pour WordPress).</li>
+        <li>Finalisation de l’installation grâce à l’assistant de configuration proposé.</li>
+      </ul>
+    </section>
+    
+    <!-- Sécurisation en HTTPS -->
+    <section id="securisation-https">
+      <h2>Sécurisation avec HTTPS</h2>
+      <p>
+        Pour garantir la confidentialité des échanges (identifiants, tokens, etc.) et renforcer la confiance des utilisateurs, il est essentiel d’utiliser le protocole HTTPS.  
+      </p>
+      <p>
+        En environnement de production, pensez à obtenir un certificat SSL/TLS gratuit via Let's Encrypt ou un certificat signé par une autorité de certification. Pour les environnements internes ou de test, un certificat auto-signé peut être utilisé (n’oubliez pas d’ajouter le certificat à la liste de confiance de vos navigateurs).
+      </p>
+      <p>
+        La configuration HTTPS se fait généralement au niveau du serveur web (Apache ou Nginx), via la création d'un VirtualHost dédié pour le port 443 et la redirection des requêtes HTTP (port 80) vers HTTPS.
+      </p>
+    </section>
+    
+    <!-- Gestion de la navigation via Droplet -->
+    <section id="navigation">
+      <h2>Gestion Dynamique de la Navigation</h2>
+      <p>
+        Pour améliorer l'expérience utilisateur, le site adapte dynamiquement la navigation en fonction de l'état de connexion.  
+      </p>
+      <p>
+        <strong>Principe :</strong>  
+        Si l'utilisateur est connecté (un token JWT est présent dans le navigateur), le site masque automatiquement les onglets « Login » et « Register » et affiche ceux « Mon Compte » et « Réserver ». S'il n'est pas connecté, l'inverse se produit.
+      </p>
+      <p>
+        Pour réaliser cette fonctionnalité, nous avons créé un droplet nommé <strong>JS_Injection</strong> qui contient le code JavaScript suivant :
+      </p>
+      <pre><code>
+// JS_Injection.droplet.php
+/*
+Title: JS_Injection
+Description: Injecte du code JavaScript pour afficher/masquer les liens du menu en fonction de l'état de connexion.
+Author: VotreNom
+*/
+$script = '<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function(){
+  var token = localStorage.getItem("jwt");
+  var loginLink = document.querySelector("a[href*=\"/login\"]");
+  var registerLink = document.querySelector("a[href*=\"/register\"]");
+  var compteLink = document.querySelector("a[href*=\"/mon-compte\"]");
+  var reserverLink = document.querySelector("a[href*=\"/reserver\"]");
+
+  if (token) {
+    if (loginLink) { loginLink.style.display = "none"; }
+    if (registerLink) { registerLink.style.display = "none"; }
+    if (compteLink) { compteLink.style.display = "inline-block"; }
+    if (reserverLink) { reserverLink.style.display = "inline-block"; }
+  } else {
+    if (loginLink) { loginLink.style.display = "inline-block"; }
+    if (registerLink) { registerLink.style.display = "inline-block"; }
+    if (compteLink) { compteLink.style.display = "none"; }
+    if (reserverLink) { reserverLink.style.display = "none"; }
+  }
+});
+</script>';
+return $script;
+      </code></pre>
+      <p>
+        Ce droplet retourne une chaîne contenant le script JS et ne peut pas inclure les balises PHP d'ouverture/fermeture.  
+        Nous avons ensuite inséré ce droplet dans le footer via les réglages généraux de WebsiteBaker, en ajoutant simplement la ligne :
+      </p>
+      <pre><code>[[JS_Injection]]</code></pre>
+      <p>
+        Ainsi, à chaque chargement d'une page, le script s'exécute automatiquement et ajuste la visibilité des éléments du menu selon que l'utilisateur soit logué ou non.
+      </p>
+    </section>
+  </main>
+  
+  <footer>
+    <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>
