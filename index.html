@@ -38,21 +38,188 @@
         En résumé, notre projet permet de maintenir un contenu dynamique centralisé – qui se met à jour automatiquement – tout en laissant les CMS se concentrer sur leur rôle de présentation.
       </p>
 
-      <!-- Insertion du flowchart SVG -->
-      <div class="flowchart-container">
-        <svg aria-roledescription="flowchart-v2" role="graphics-document document" viewBox="0 0 1968.546875 451.25" style="max-width: 100%; height: auto;" xmlns="http://www.w3.org/2000/svg" id="export-svg">
-          <!-- (styles et définitions importées dans votre question) -->
-          <style>@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"); p {margin: 0;}</style>
-          <style>#export-svg{font-family:arial,sans-serif;font-size:14px;fill:#000000;} /* ...reste des styles... */</style>
-          <defs>
-            <!-- vos filtres et gradients... -->
-          </defs>
-          <g>
-            <!-- contenu du diagramme généré par Mermaid -->
-          </g>
-        </svg>
-      </div>
-      <!-- Fin du flowchart SVG -->
+     <!-- Insertion complète du flowchart SVG dans une div -->
+<div class="flowchart-container">
+  <svg aria-roledescription="flowchart-v2"
+       role="graphics-document document"
+       viewBox="0 0 1968.546875 451.25"
+       style="max-width: 100%; height: auto;"
+       class="flowchart"
+       xmlns="http://www.w3.org/2000/svg"
+       id="export-svg">
+
+    <!-- Styles importés par Mermaid -->
+    <style xmlns="http://www.w3.org/1999/xhtml">
+      @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css");
+      p { margin: 0; }
+    </style>
+    <style>
+      #export-svg { font-family:arial,sans-serif; font-size:14px; fill:#000; }
+      @keyframes edge-animation-frame { from{stroke-dashoffset:0;} }
+      @keyframes dash { to{stroke-dashoffset:0;} }
+      /* … (le reste complet des styles générés par Mermaid) … */
+      #export-svg .serveur>* { fill:#f2f2f2!important; stroke:#999!important; stroke-width:1px!important; }
+      #export-svg .cms>*    { fill:#d0ebff!important; stroke:#0288d1!important; stroke-width:2px!important; }
+      #export-svg .si>*     { fill:#ffe0b2!important; stroke:#fb8c00!important; stroke-width:2px!important; }
+    </style>
+
+    <!-- Définitions (gradients, filtres, markers…) -->
+    <defs>
+      <filter id="drop-shadow" width="130%" height="130%">
+        <feDropShadow flood-color="#FFFFFF" flood-opacity="0.06" stdDeviation="0" dy="4" dx="4"/>
+      </filter>
+      <filter id="drop-shadow-small" width="150%" height="150%">
+        <feDropShadow flood-color="#FFFFFF" flood-opacity="0.06" stdDeviation="0" dy="2" dx="2"/>
+      </filter>
+      <linearGradient id="export-svg-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="hsl(78,18%,64%)"/>
+        <stop offset="100%" stop-color="hsl(99,60%,75%)"/>
+      </linearGradient>
+      <!-- Markers pour les flèches -->
+      <marker id="export-svg_flowchart-v2-pointEnd" orient="auto" markerWidth="10.5" markerHeight="14" refX="7.75" refY="7">
+        <path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath"/>
+      </marker>
+      <marker id="export-svg_flowchart-v2-pointStart" orient="auto" markerWidth="11.5" markerHeight="14" refX="4" refY="7">
+        <polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath"/>
+      </marker>
+      <!-- … (tous les autres markers générés) … -->
+    </defs>
+
+    <!-- Contenu du diagramme -->
+    <g>
+      <!-- Cluster : Installation sur un seul serveur -->
+      <g class="cluster" data-id="s1">
+        <rect x="8" y="24.5" width="282" height="390" fill="#cdffb2" stroke="#6eaa49"/>
+        <g class="cluster-label" transform="translate(54.0625,24.5)">
+          <foreignObject width="189.875" height="21">
+            <div style="text-align:center; white-space:break-spaces; line-height:1.5;">
+              <p>Installation sur un seul serveur</p>
+            </div>
+          </foreignObject>
+        </g>
+      </g>
+
+      <!-- Cluster : Côte CMS -->
+      <g class="cluster" data-id="CMSs">
+        <rect x="340" y="102.5" width="262.3125" height="340.75" fill="#cdffb2" stroke="#6eaa49"/>
+        <g class="cluster-label" transform="translate(438.8672,102.5)">
+          <foreignObject width="64.578125" height="21">
+            <div style="text-align:center; line-height:1.5;">
+              <p>Côte CMS</p>
+            </div>
+          </foreignObject>
+        </g>
+      </g>
+
+      <!-- Cluster : Système d'Information -->
+      <g class="cluster si" data-id="SI">
+        <rect x="1445.7812" y="8" width="514.7656" height="298.5803" fill="#cdffb2" stroke="#6eaa49"/>
+        <g class="cluster-label" transform="translate(1603.1641,8)">
+          <foreignObject width="200" height="42">
+            <div style="text-align:center; line-height:1.5;">
+              <p>Système d'Information<br/>192.168.1.77</p>
+            </div>
+          </foreignObject>
+        </g>
+      </g>
+
+      <!-- Flèches et labels d’étapes -->
+      <path class="flowchart-link" d="M602.3125,151.25L689.5781,151.25" marker-end="url(#export-svg_flowchart-v2-pointEnd)">
+      </path>
+      <g class="edgeLabel" transform="translate(689.5781,151.25)">
+        <foreignObject width="124.53125" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>1-Chargement page</p>
+          </div>
+        </foreignObject>
+      </g>
+      <!-- … toutes les autres flèches (2-fetch, 3-Retour, etc.) et leurs labels … -->
+
+      <!-- Nœuds : Serveur unique -->
+      <g class="node serveur" data-id="VM">
+        <rect x="-116" y="-33" width="232" height="66" fill="#f2f2f2" stroke="#999"/>
+        <foreignObject x="-100" y="-21" width="200" height="42">
+          <div style="text-align:center; white-space:break-spaces; line-height:1.5;">
+            <p>Serveur unique<br/>Apache + PHP + SI + CMS</p>
+          </div>
+        </foreignObject>
+      </g>
+
+      <!-- Nœuds : WordPress, Joomla, WebsiteBaker -->
+      <g class="node cms" data-id="WP" transform="translate(471.1562,195.75)">
+        <rect x="-97.203125" y="-22.5" width="194.40625" height="45" fill="#d0ebff" stroke="#0288d1" stroke-width="2"/>
+        <foreignObject x="-81.203125" y="-10.5" width="162.40625" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>WordPress<br/>192.168.1.22</p>
+          </div>
+        </foreignObject>
+      </g>
+      <g class="node cms" data-id="JOOM" transform="translate(471.1562,290.75)">
+        <rect x="-85.28125" y="-22.5" width="170.5625" height="45" fill="#d0ebff" stroke="#0288d1" stroke-width="2"/>
+        <foreignObject x="-69.28125" y="-10.5" width="138.5625" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>Joomla<br/>192.168.1.34</p>
+          </div>
+        </foreignObject>
+      </g>
+      <g class="node cms" data-id="WSB" transform="translate(471.1562,385.75)">
+        <rect x="-106.15625" y="-22.5" width="212.3125" height="45" fill="#d0ebff" stroke="#0288d1" stroke-width="2"/>
+        <foreignObject x="-90.15625" y="-10.5" width="180.3125" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>WebsiteBaker<br/>192.168.1.35</p>
+          </div>
+        </foreignObject>
+      </g>
+
+      <!-- Nœuds : SPA, API, DB -->
+      <g class="node si" data-id="SPA" transform="translate(1562.2656,103)">
+        <rect x="-80.8359375" y="-22.5" width="161.671875" height="45" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>
+        <foreignObject x="-64.8359375" y="-10.5" width="129.671875" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>SPA<br/>HTML/CSS/JS</p>
+          </div>
+        </foreignObject>
+      </g>
+      <g class="node si" data-id="API" transform="translate(1562.2656,229.75)">
+        <rect x="-91.484375" y="-22.5" width="182.96875" height="45" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>
+        <foreignObject x="-75.484375" y="-10.5" width="150.96875" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>API PHP<br/>login, register</p>
+          </div>
+        </foreignObject>
+      </g>
+      <g class="node si" data-id="DB" transform="translate(1869.0547,229.75)">
+        <path d="M0,12.8869 a66.4922,12.8869 0 0 0 132.9844,0 a66.4922,12.8869 0 0 0 -132.9844,0 l0,57.8869 a66.4922,12.8869 0 0 0 132.9844,0 l0,-57.8869"
+              fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>
+        <foreignObject x="-54.4921875" y="-3" width="108.984375" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>Base de données</p>
+          </div>
+        </foreignObject>
+      </g>
+
+      <!-- Nœuds : Injection JS & Router -->
+      <g class="node" data-id="Inject" transform="translate(892.84375,151.25)">
+        <rect x="-116" y="-33" width="232" height="66"/>
+        <foreignObject x="-100" y="-21" width="200" height="42">
+          <div style="text-align:center; line-height:1.5;">
+            <p>Injection JS via HFCM / module / snippet</p>
+          </div>
+        </foreignObject>
+      </g>
+      <g class="node" data-id="Router" transform="translate(1227.7031,229.75)">
+        <rect x="-40.90625" y="-22.5" width="81.8125" height="45"/>
+        <foreignObject x="-24.90625" y="-10.5" width="49.8125" height="21">
+          <div style="text-align:center; line-height:1.5;">
+            <p>router.js</p>
+          </div>
+        </foreignObject>
+      </g>
+    </g>
+
+  </svg>
+</div>
+
 
       <p>
         Choisissez votre CMS dans le menu pour accéder aux instructions détaillées sur l'intégration.
