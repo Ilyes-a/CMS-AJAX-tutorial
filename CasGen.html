@@ -102,6 +102,18 @@ else if (host.startsWith("wordpress.")) ROUTE_PREFIX = "/index.php",  ROUTE_SUFF
 else if (host.startsWith("websitebaker.")) ROUTE_PREFIX = "/pages",   ROUTE_SUFFIX = ".php";
           </pre>
         </li>
+
+      <li>
+      <h2>Activer et redémarrer</h2>
+      <pre><code>
+sudo a2enmod ssl rewrite
+sudo a2ensite wordpress.conf wordpress-ssl.conf
+sudo a2ensite joomla.conf joomla-ssl.conf
+sudo a2ensite websitebaker.conf websitebaker-ssl.conf
+sudo a2ensite si.conf si-ssl.conf
+sudo systemctl reload apache2
+      </code></pre>
+    </li>
       </ol>
 
       <h2>Schéma multi-VM (état actuel)</h2>
