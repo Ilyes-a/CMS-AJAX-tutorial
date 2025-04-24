@@ -114,46 +114,7 @@ define('DB_PASSWORD','yourpass');
           </code></pre>
       </ol>
     </section>
-
-    <section id="virtualhosts">
-      <h2>4. VirtualHosts Apache & DNS/hosts</h2>
-      <h3>/etc/hosts (local)</h3>
-      <pre><code>
-192.168.1.100 wordpress.local
-192.168.1.100 joomla.local
-192.168.1.100 websitebaker.local
-192.168.1.100 si.local
-      </code></pre>
-
-      <h3>Exemple de VirtualHost HTTPS (WordPress)</h3>
-      <pre><code>
-<VirtualHost *:443>
-  ServerName wordpress.local
-  DocumentRoot /var/www/html/wordpress
-  SSLEngine on
-  SSLCertificateFile /etc/ssl/certs/wordpress.crt
-  SSLCertificateKeyFile /etc/ssl/private/wordpress.key
-
-  <Directory /var/www/html/wordpress>
-    AllowOverride All
-    Require all granted
-  </Directory>
-</VirtualHost>
-      </code></pre>
-      <p>Répétez pour <code>joomla.local</code>, <code>websitebaker.local</code> et pour le SI (<code>si.local</code>, <code>/var/www/API_SYS_INFORMATION/spa-php</code> + alias /api → <code>api/</code>).</p>
-    </section>
-
-    <section id="redemarrer-apache">
-      <h2>5. Activer et redémarrer</h2>
-      <pre><code>
-sudo a2enmod ssl rewrite
-sudo a2ensite wordpress.conf wordpress-ssl.conf
-sudo a2ensite joomla.conf joomla-ssl.conf
-sudo a2ensite websitebaker.conf websitebaker-ssl.conf
-sudo a2ensite si.conf si-ssl.conf
-sudo systemctl reload apache2
-      </code></pre>
-    </section>
+    
   </main>
 
   <footer>
