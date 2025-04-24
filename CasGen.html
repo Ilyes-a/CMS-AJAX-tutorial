@@ -6,6 +6,10 @@
   <title>Cas Général - Intégration SI & CMS</title>
   <meta name="description" content="Vue d'ensemble de l'intégration du SI avec divers CMS en environnement multi-VM ou serveur unique." />
   <link rel="stylesheet" href="style.css">
+  <style>
+    .diagram { margin: 1em 0; text-align: center; }
+    .diagram svg { max-width: 100%; height: auto; border: 1px solid #ccc; }
+  </style>
 </head>
 <body>
   <header>
@@ -35,19 +39,153 @@
           <strong>Environnements multi-VM :</strong> Chaque CMS et le SI sont installés sur des machines virtuelles distinctes avec des adresses IP spécifiques. Le router du SI adapte les chemins en fonction des IP.
         </li>
         <li>
-          <strong>Serveur unique :</strong> Tous les systèmes partagent la même IP. L'utilisation de sous-domaines (ex. wordpress.example.com, joomla.example.com) permet de différencier les CMS et d'ajuster dynamiquement les routes.
+          <strong>Serveur unique :</strong> Tous les systèmes partagent la même IP. L'utilisation de sous-domaines permet de différencier les CMS et d'ajuster dynamiquement les routes.
         </li>
       </ul>
     </section>
     
     <section id="casgen-details">
-      <h2>Adaptations Techniques</h2>
+      <h2>Configuration DNS & VirtualHost pour un serveur unique</h2>
+
       <p>
-        Pour les environnements multi-VM, le router détecte le CMS selon la terminaison de l'IP (ex. "35" pour WebSiteBaker, "22" pour WordPress). Pour un serveur unique, des sous-domaines distincts ou une configuration explicite (variables d'environnement ou fichier de config) permettent de définir correctement <code>ROUTE_PREFIX</code> et <code>ROUTE_SUFFIX</code>.
+        Non, pas de fichier YAML à toucher : c’est le DNS (ou votre fichier <code>hosts</code>) et vos VirtualHosts Apache/NGINX qui font la distinction.
       </p>
-      <p>
-        Cette approche garantit une intégration interopérable, sécurisée et performante entre le SI et les CMS.
-      </p>
+      <ol>
+        <li>
+          <strong>DNS / hosts</strong><br>
+          Créez trois sous-domaines pointant tous vers l’IP du serveur, par exemple :
+          <pre>
+joomla.local      → 192.168.1.77  
+wordpress.local   → 192.168.1.77  
+websitebaker.local→ 192.168.1.77  
+si.local          → 192.168.1.77  
+          </pre>
+        </li>
+        <li>
+          <strong>VirtualHost Apache</strong><br>
+          Pour chaque nom, activez un hôte virtuel avec son <code>ServerName</code> et son <code>DocumentRoot</code> :
+          <pre>
+<VirtualHost *:80>
+  ServerName joomla.local
+  Redirect permanent / https://joomla.local/
+</VirtualHost>
+<VirtualHost *:443>
+  ServerName joomla.local
+  DocumentRoot /var/www/html/joomla
+  SSLEngine on
+  SSLCertificateFile /etc/ssl/certs/joomla.crt
+  SSLCertificateKeyFile /etc/ssl/private/joomla.key
+</VirtualHost>
+          </pre>
+          …et de même pour <code>wordpress.local</code> et <code>websitebaker.local</code>.
+        </li>
+        <li>
+          <strong>Configuration interne des CMS</strong><br>
+          Dans leurs fichiers de config :
+          <ul>
+            <li><em>Joomla</em> (<code>configuration.php</code>) : <code>public $live_site = 'https://joomla.local';</code></li>
+            <li><em>WordPress</em> (<code>wp-config.php</code>) :
+              <code>define('WP_HOME','https://wordpress.local');<br>
+                      define('WP_SITEURL','https://wordpress.local');</code>
+            </li>
+            <li><em>WebSiteBaker</em> : <code>define('WB_URL','https://websitebaker.local');</code></li>
+          </ul>
+        </li>
+        <li>
+          <strong>Router.js du SI</strong><br>
+          Détectez le sous-domaine appelant pour fixer <code>ROUTE_PREFIX</code> et <code>ROUTE_SUFFIX</code> :
+          <pre>
+const host = window.location.hostname;
+if (host.startsWith("joomla."))      ROUTE_PREFIX = "/index.php",     ROUTE_SUFFIX = "";
+else if (host.startsWith("wordpress.")) ROUTE_PREFIX = "/index.php",  ROUTE_SUFFIX = "";
+else if (host.startsWith("websitebaker.")) ROUTE_PREFIX = "/pages",   ROUTE_SUFFIX = ".php";
+          </pre>
+        </li>
+      </ol>
+
+      <h3>Schéma multi-VM (état actuel)</h3>
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+          <!-- Background -->
+          <rect width="100%" height="100%" fill="#f9f9f9"/>
+          <!-- SI VM -->
+          <rect x="200" y="20" width="200" height="80" rx="10" ry="10" fill="#ddeeff" stroke="#003366" stroke-width="2"/>
+          <text x="300" y="50" font-family="Arial" font-size="16" fill="#003366" text-anchor="middle">SI (VM)</text>
+          <text x="300" y="70" font-family="Arial" font-size="14" fill="#003366" text-anchor="middle">192.168.1.77</text>
+
+          <!-- CMS VMs -->
+          <!-- WordPress -->
+          <rect x="20" y="200" width="160" height="80" rx="10" ry="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+          <text x="100" y="230" font-family="Arial" font-size="16" fill="#2e7d32" text-anchor="middle">WordPress (VM)</text>
+          <text x="100" y="250" font-family="Arial" font-size="14" fill="#2e7d32" text-anchor="middle">192.168.1.22</text>
+
+          <!-- Joomla -->
+          <rect x="220" y="200" width="160" height="80" rx="10" ry="10" fill="#fff3e0" stroke="#ef6c00" stroke-width="2"/>
+          <text x="300" y="230" font-family="Arial" font-size="16" fill="#ef6c00" text-anchor="middle">Joomla (VM)</text>
+          <text x="300" y="250" font-family="Arial" font-size="14" fill="#ef6c00" text-anchor="middle">192.168.1.34</text>
+
+          <!-- WebsiteBaker -->
+          <rect x="420" y="200" width="160" height="80" rx="10" ry="10" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="2"/>
+          <text x="500" y="230" font-family="Arial" font-size="16" fill="#6a1b9a" text-anchor="middle">WebSiteBaker (VM)</text>
+          <text x="500" y="250" font-family="Arial" font-size="14" fill="#6a1b9a" text-anchor="middle">192.168.1.35</text>
+
+          <!-- Connections -->
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#555" />
+            </marker>
+          </defs>
+          <line x1="300" y1="100" x2="100" y2="200" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+          <line x1="300" y1="100" x2="300" y2="200" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+          <line x1="300" y1="100" x2="500" y2="200" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+        </svg>
+      </div>
+
+      <h3>Schéma « serveur unique » via sous-domaines</h3>
+      <div class="diagram">
+        <svg width="800" height="500" xmlns="http://www.w3.org/2000/svg">
+          <!-- Arrow definition -->
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#555" />
+            </marker>
+          </defs>
+          <!-- Client -->
+          <rect x="50" y="30" width="150" height="50" fill="#E0F7FA" stroke="#00796B" stroke-width="2"/>
+          <text x="125" y="60" font-size="14" text-anchor="middle" fill="#00796B">Client Web</text>
+          <!-- Arrow to Server -->
+          <line x1="200" y1="55" x2="300" y2="55" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+          <!-- Server box -->
+          <rect x="300" y="20" width="450" height="460" fill="#FFF8E1" stroke="#F57F17" stroke-width="2"/>
+          <text x="525" y="40" font-size="16" text-anchor="middle" fill="#F57F17">Serveur Unique (192.168.1.100)</text>
+          <!-- Subdomains -->
+          <text x="525" y="65" font-size="12" text-anchor="middle" fill="#555">wordpress.example.com</text>
+          <text x="525" y="80" font-size="12" text-anchor="middle" fill="#555">joomla.example.com</text>
+          <text x="525" y="95" font-size="12" text-anchor="middle" fill="#555">websitebaker.example.com</text>
+          <text x="525" y="110" font-size="12" text-anchor="middle" fill="#555">si.example.com</text>
+          <!-- VirtualHost container -->
+          <rect x="320" y="120" width="410" height="340" fill="#F1F8E9" stroke="#33691E" stroke-width="1"/>
+          <text x="525" y="140" font-size="14" text-anchor="middle" fill="#33691E">VirtualHost HTTPS</text>
+          <!-- Boxes for each component -->
+          <rect x="340" y="160" width="180" height="80" fill="#E8EAF6" stroke="#3F51B5" stroke-width="1"/>
+          <text x="430" y="190" font-size="12" fill="#3F51B5">WordPress</text>
+          <text x="430" y="205" font-size="10" fill="#3F51B5">/var/www/html/wordpress</text>
+
+          <rect x="580" y="160" width="170" height="80" fill="#E8EAF6" stroke="#3F51B5" stroke-width="1"/>
+          <text x="665" y="190" font-size="12" fill="#3F51B5">Joomla</text>
+          <text x="665" y="205" font-size="10" fill="#3F51B5">/var/www/html/joomla</text>
+
+          <rect x="340" y="260" width="180" height="80" fill="#FFEBEE" stroke="#C62828" stroke-width="1"/>
+          <text x="430" y="290" font-size="12" fill="#C62828">WebsiteBaker</text>
+          <text x="430" y="305" font-size="10" fill="#C62828">/var/www/html/websitebaker</text>
+
+          <rect x="580" y="260" width="170" height="80" fill="#E0F2F1" stroke="#00796B" stroke-width="1"/>
+          <text x="665" y="290" font-size="12" fill="#00796B">SI (SPA + API)</text>
+          <text x="665" y="305" font-size="10" fill="#00796B">/home/vboxuser/SI-backup</text>
+          <text x="665" y="320" font-size="10" fill="#00796B">router.js + style.css</text>
+        </svg>
+      </div>
+
     </section>
   </main>
   
