@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Installation des CMS & du SI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Installation des CMS & du Système d’Information</h1>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="installation.html" class="active">Installation</a></li>
+      <li><a href="wordpress.html">WordPress</a></li>
+      <li><a href="joomla.html">Joomla</a></li>
+      <li><a href="websitebaker.html">WebSiteBaker</a></li>
+      <li><a href="SI.html">Configuration SI</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="prerequis">
+      <h2>Prérequis</h2>
+      <ul>
+        <li>Un serveur Ubuntu (18.04+) avec Apache2, PHP 7.4+ et MySQL/MariaDB</li>
+        <li>Accès SSH / sudo</li>
+        <li>Certificats SSL (autosignés ou Let’s Encrypt)</li>
+      </ul>
+    </section>
+
+    <section id="clone-si">
+      <h2>1. Déployer le SI</h2>
+      <p>Dans votre VM SI ou sur votre serveur unique :</p>
+      <pre><code>
+# Aller dans votre répertoire web
+cd /var/www
+# Cloner la version “SI-fini” du dépôt
+git clone -b SI-fini https://github.com/Clovelahuiss/CMS-SI.git API_SYS_INFORMATION
+# Structure attendue :
+# API_SYS_INFORMATION/
+# ├── api/           ← scripts PHP (login.php, register.php…)
+# └── spa-php/       ← pages .html, .js, style.css, router.js…
+      </code></pre>
+    </section>
+
+    <section id="bases-de-donnees">
+      <h2>2. Créer les bases de données</h2>
+      <p>Pour chaque CMS, connectez-vous à MySQL :</p>
+      <pre><code>
+mysql -u root -p
+CREATE DATABASE wp_db  DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE joomla_db  DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE wsb_db  DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+      </code></pre>
+    </section>
+
+    <section id="installer-cms">
+      <h2>3. Déployer les CMS</h2>
+
+      <h3>WordPress</h3>
+      <ol>
+        <li>Télécharger : <code>wget https://wordpress.org/latest.tar.gz</code></li>
+        <li>Décompresser et déplacer :
+          <pre><code>
+tar xzf latest.tar.gz
+sudo mv wordpress /var/www/html/wordpress
+          </code></pre>
+        </li>
+        <li>Configurer <code>wp-config.php</code> :
+          <pre><code>
+define('DB_NAME','wp_db');
+define('DB_USER','youruser');
+define('DB_PASSWORD','yourpass');
+define('WP_HOME','https://wordpress.local');
+define('WP_SITEURL','https://wordpress.local');
+          </code></pre>
+      </ol>
+
+      <h3>Joomla</h3>
+      <ol>
+        <li>Télécharger : <code>wget https://downloads.joomla.org/cms/joomla3/3-10-11/Joomla_3-10-11-Stable-Full_Package.zip</code></li>
+        <li>Décompresser et déplacer :
+          <pre><code>
+unzip Joomla_3-10-11-Stable-Full_Package.zip
+sudo mv Joomla_3-10-11-Stable-Full_Package /var/www/html/joomla
+          </code></pre>
+        </li>
+        <li>Configurer <code>configuration.php</code> :
+          <pre><code>
+public $dbtype   = 'mysqli';
+public $host     = 'localhost';
+public $user     = 'youruser';
+public $password = 'yourpass';
+public $db       = 'joomla_db';
+public $live_site = 'https://joomla.local';
+          </code></pre>
+      </ol>
+
+      <h3>WebsiteBaker</h3>
+      <ol>
+        <li>Télécharger et déployer dans <code>/var/www/html/websitebaker</code></li>
+        <li>Configurer le DB via le panneau d’installation WebSiteBaker</li>
+        <li>Dans <code>config.php</code> (ou équivalent) :
+          <pre><code>
+define('WB_URL','https://websitebaker.local');
+define('DB_NAME','wsb_db');
+define('DB_USER','youruser');
+define('DB_PASSWORD','yourpass');
+          </code></pre>
+      </ol>
+    </section>
+
+    <section id="virtualhosts">
+      <h2>4. VirtualHosts Apache & DNS/hosts</h2>
+      <h3>/etc/hosts (local)</h3>
+      <pre><code>
+192.168.1.100 wordpress.local
+192.168.1.100 joomla.local
+192.168.1.100 websitebaker.local
+192.168.1.100 si.local
+      </code></pre>
+
+      <h3>Exemple de VirtualHost HTTPS (WordPress)</h3>
+      <pre><code>
+<VirtualHost *:443>
+  ServerName wordpress.local
+  DocumentRoot /var/www/html/wordpress
+  SSLEngine on
+  SSLCertificateFile /etc/ssl/certs/wordpress.crt
+  SSLCertificateKeyFile /etc/ssl/private/wordpress.key
+
+  <Directory /var/www/html/wordpress>
+    AllowOverride All
+    Require all granted
+  </Directory>
+</VirtualHost>
+      </code></pre>
+      <p>Répétez pour <code>joomla.local</code>, <code>websitebaker.local</code> et pour le SI (<code>si.local</code>, <code>/var/www/API_SYS_INFORMATION/spa-php</code> + alias /api → <code>api/</code>).</p>
+    </section>
+
+    <section id="redemarrer-apache">
+      <h2>5. Activer et redémarrer</h2>
+      <pre><code>
+sudo a2enmod ssl rewrite
+sudo a2ensite wordpress.conf wordpress-ssl.conf
+sudo a2ensite joomla.conf joomla-ssl.conf
+sudo a2ensite websitebaker.conf websitebaker-ssl.conf
+sudo a2ensite si.conf si-ssl.conf
+sudo systemctl reload apache2
+      </code></pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Grp ISEN M1. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>
